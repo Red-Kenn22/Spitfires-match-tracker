@@ -1,0 +1,3662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#091326" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Matchday — Pitchside Football Coaching Cockpit</title>
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & DAYLIGHT-FIRST HIGH-CONTRAST SYSTEM
+       ========================================================================== */
+    :root {
+      --bg-app: #eef2f6;
+      --bg-surface: #ffffff;
+      --bg-elevated: #f8fafc;
+      --bg-header: #091326;
+      --bg-header-accent: #132342;
+
+      --text-primary: #070d19;
+      --text-secondary: #2e3d52;
+      --text-muted: #52637a;
+      --text-on-dark: #ffffff;
+
+      --border-strong: #1e293b;
+      --border-subtle: #cbd5e1;
+
+      /* Pitch & Token Palette */
+      --pitch-turf-1: #1b7a3d;
+      --pitch-turf-2: #156832;
+      --pitch-line: rgba(255, 255, 255, 0.88);
+      --token-sky: #72c2eb;
+      --token-sky-active: #38bdf8;
+      --token-navy: #061326;
+      --token-selected-ring: #facc15;
+
+      /* High-Contrast Semantic Action Colors */
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --success: #15803d;
+      --success-bright: #16a34a;
+      --warning: #eab308;
+      --warning-text: #422006;
+      --danger: #dc2626;
+      --danger-dark: #b91c1c;
+      --neutral-btn: #334155;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 2px 4px rgba(7, 13, 25, 0.08);
+      --shadow-md: 0 4px 12px rgba(7, 13, 25, 0.14);
+      --shadow-lg: 0 10px 25px rgba(7, 13, 25, 0.25);
+
+      --nav-height: 68px;
+      --touch-min: 48px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    input, textarea, select {
+      user-select: text;
+      -webkit-user-select: text;
+      font-family: inherit;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      background-color: #cbd5e1;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.4;
+      overscroll-behavior-y: contain;
+    }
+
+    /* Mobile App Shell Container */
+    .app-shell {
+      width: 100%;
+      max-width: 540px;
+      min-height: 100dvh;
+      margin: 0 auto;
+      background-color: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: calc(var(--nav-height) + 16px);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ==========================================================================
+       2. TOP STATUS & SCORELINE COCKPIT HEADER
+       ========================================================================== */
+    .top-bar {
+      background: var(--bg-header);
+      color: var(--text-on-dark);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #1e3a6d;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+      font-size: 1.05rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .brand-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--token-sky);
+      border: 2px solid #ffffff;
+      display: inline-block;
+    }
+
+    .wakelock-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      min-height: 36px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 800;
+      border: 2px solid #475569;
+      background: #1e293b;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .wakelock-pill.active {
+      background: #064e3b;
+      border-color: #34d399;
+      color: #ecfdf5;
+    }
+
+    .wakelock-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+    }
+
+    .wakelock-pill.active .wakelock-indicator {
+      background: #34d399;
+      box-shadow: 0 0 8px #34d399;
+    }
+
+    /* Scoreboard Header */
+    .scoreboard-card {
+      background: var(--bg-header-accent);
+      color: var(--text-on-dark);
+      padding: 12px;
+      border-bottom: 3px solid var(--border-strong);
+    }
+
+    .scoreboard-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .team-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .team-col.home-col {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .team-col.away-col {
+      align-items: flex-end;
+      text-align: right;
+    }
+
+    .venue-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #e2e8f0;
+    }
+
+    .venue-tag.is-us {
+      background: var(--token-sky);
+      color: var(--token-navy);
+    }
+
+    .team-name-display {
+      font-size: 1.05rem;
+      font-weight: 900;
+      line-height: 1.2;
+      word-break: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .score-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+    }
+
+    .score-digits {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #050b16;
+      border: 2px solid #475569;
+      padding: 6px 14px;
+      border-radius: var(--radius-md);
+      font-size: 1.9rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .score-divider {
+      color: #64748b;
+      font-size: 1.4rem;
+    }
+
+    /* Clock & Period Bar */
+    .clock-bar {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .clock-readout-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .period-badge {
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: #334155;
+      color: #ffffff;
+      border: 2px solid #64748b;
+    }
+
+    .period-badge.live {
+      background: #16a34a;
+      border-color: #86efac;
+      color: #ffffff;
+    }
+
+    .period-badge.paused {
+      background: #eab308;
+      border-color: #fef08a;
+      color: #090d16;
+    }
+
+    .period-badge.ft {
+      background: #dc2626;
+      border-color: #fca5a5;
+      color: #ffffff;
+    }
+
+    .clock-digits {
+      font-size: 1.65rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+    }
+
+    .stoppage-badge {
+      background: #fef08a;
+      color: #090d16;
+      font-weight: 900;
+      font-size: 0.9rem;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      border: 2px solid #eab308;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .clock-nudge-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-nudge {
+      min-height: 38px;
+      min-width: 44px;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      background: #1e293b;
+      border: 1.5px solid #475569;
+      color: #e2e8f0;
+      font-weight: 800;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .btn-nudge:active {
+      background: #334155;
+    }
+
+    /* ==========================================================================
+       3. BUTTONS & ERGONOMIC 48PX+ TOUCH CONTROLS
+       ========================================================================== */
+    .btn {
+      min-height: var(--touch-min);
+      min-width: var(--touch-min);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 0.95rem;
+      border: 2px solid var(--border-strong);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.06s ease, background-color 0.12s ease;
+      text-align: center;
+      line-height: 1.15;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: #075985;
+    }
+
+    .btn-sky {
+      background: var(--token-sky);
+      color: var(--token-navy);
+      border-color: var(--token-navy);
+    }
+
+    .btn-success {
+      background: var(--success-bright);
+      color: #ffffff;
+      border-color: #14532d;
+    }
+
+    .btn-warning {
+      background: var(--warning);
+      color: var(--warning-text);
+      border-color: #713f12;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #ffffff;
+      border-color: #7f1d1d;
+    }
+
+    .btn-neutral {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+
+    .btn-dark {
+      background: #1e293b;
+      color: #ffffff;
+      border-color: #090d16;
+    }
+
+    .clock-controls-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .clock-controls-row .btn {
+      flex: 1 1 auto;
+    }
+
+    /* ==========================================================================
+       4. INTERACTIVE PITCH & SKY-BLUE PLAYER TOKENS (#72c2eb)
+       ========================================================================== */
+    .section-pad {
+      padding: 12px;
+    }
+
+    .pitch-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 4.15;
+      max-height: 510px;
+      margin: 0 auto;
+      border-radius: var(--radius-lg);
+      border: 3px solid var(--border-strong);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--pitch-turf-1) 0%,
+        var(--pitch-turf-1) 10%,
+        var(--pitch-turf-2) 10%,
+        var(--pitch-turf-2) 20%
+      );
+      touch-action: manipulation;
+    }
+
+    /* Crisp White Pitch Markings */
+    .pitch-lines {
+      position: absolute;
+      inset: 10px;
+      border: 2.5px solid var(--pitch-line);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .pitch-halfway {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: var(--pitch-line);
+      transform: translateY(-50%);
+    }
+
+    .pitch-center-circle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 26%;
+      aspect-ratio: 1 / 1;
+      border: 2.5px solid var(--pitch-line);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .pitch-center-spot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 6px;
+      height: 6px;
+      background: var(--pitch-line);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .pitch-box-top {
+      position: absolute;
+      top: 0;
+      left: 22%;
+      width: 56%;
+      height: 16%;
+      border: 2.5px solid var(--pitch-line);
+      border-top: none;
+    }
+
+    .pitch-box-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 22%;
+      width: 56%;
+      height: 16%;
+      border: 2.5px solid var(--pitch-line);
+      border-bottom: none;
+    }
+
+    .pitch-six-top {
+      position: absolute;
+      top: 0;
+      left: 36%;
+      width: 28%;
+      height: 6.5%;
+      border: 2px solid var(--pitch-line);
+      border-top: none;
+    }
+
+    .pitch-six-bottom {
+      position: absolute;
+      bottom: 0;
+      left: 36%;
+      width: 28%;
+      height: 6.5%;
+      border: 2px solid var(--pitch-line);
+      border-bottom: none;
+    }
+
+    .pitch-banner-overlay {
+      position: absolute;
+      top: 8px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .pitch-formation-tag {
+      background: rgba(6, 19, 38, 0.85);
+      color: #ffffff;
+      font-size: 0.74rem;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      letter-spacing: 0.04em;
+    }
+
+    /* Player Token on Pitch */
+    .pitch-slot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 64px;
+      min-height: 64px;
+      cursor: pointer;
+      z-index: 5;
+      transition: top 0.22s ease, left 0.22s ease, transform 0.12s ease;
+      touch-action: none;
+    }
+
+    .pitch-slot:active {
+      transform: translate(-50%, -50%) scale(1.08);
+      z-index: 15;
+    }
+
+    .pitch-slot.dragging {
+      z-index: 30;
+      opacity: 0.92;
+      transition: none;
+    }
+
+    .token-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--token-sky);
+      border: 3px solid var(--token-navy);
+      color: var(--token-navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.15rem;
+      font-variant-numeric: tabular-nums;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+      position: relative;
+    }
+
+    .pitch-slot.empty .token-circle {
+      background-color: rgba(15, 23, 42, 0.55);
+      border: 2.5px dashed #ffffff;
+      color: #ffffff;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .pitch-slot.selected .token-circle {
+      box-shadow: 0 0 0 4px var(--token-selected-ring), 0 4px 12px rgba(0, 0, 0, 0.5);
+      border-color: #000000;
+      transform: scale(1.08);
+    }
+
+    .pitch-slot.sent-off .token-circle {
+      background-color: #991b1b;
+      color: #ffffff;
+      border-color: #fef2f2;
+    }
+
+    .token-label {
+      margin-top: 3px;
+      background: #061326;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.74rem;
+      padding: 2px 7px;
+      border-radius: 5px;
+      border: 1.5px solid #ffffff;
+      white-space: nowrap;
+      max-width: 92px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+      line-height: 1.15;
+    }
+
+    /* Token Status Badges (Minutes, Goals, Cards) */
+    .token-mins-badge {
+      position: absolute;
+      top: -6px;
+      right: -10px;
+      background: #091326;
+      color: #fef08a;
+      border: 1.5px solid #ffffff;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 900;
+      padding: 1px 5px;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .token-card-flag {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      width: 14px;
+      height: 18px;
+      border-radius: 3px;
+      border: 1.5px solid #000000;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    .token-card-flag.yellow {
+      background: #facc15;
+    }
+
+    .token-card-flag.red {
+      background: #ef4444;
+    }
+
+    .token-goal-pill {
+      position: absolute;
+      bottom: -5px;
+      right: -8px;
+      background: #ffffff;
+      color: #090d16;
+      border: 1.5px solid #090d16;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 900;
+      padding: 0px 4px;
+      line-height: 1.2;
+    }
+
+    /* ==========================================================================
+       5. QUICK ACTION BAR & BENCH CARDS
+       ========================================================================== */
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .quick-btn {
+      min-height: 56px;
+      padding: 8px 6px;
+      border-radius: var(--radius-md);
+      border: 2.5px solid var(--border-strong);
+      font-weight: 900;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .quick-btn:active {
+      transform: scale(0.96);
+    }
+
+    .quick-btn .qb-icon {
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .undo-bar {
+      margin-top: 8px;
+      display: flex;
+    }
+
+    .undo-bar .btn {
+      width: 100%;
+      background: #fffbeb;
+      color: #78350f;
+      border-color: #b45309;
+    }
+
+    /* Card Containers */
+    .panel-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-top: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border-subtle);
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .badge-count {
+      background: var(--bg-header);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 900;
+      padding: 3px 9px;
+      border-radius: var(--radius-full);
+    }
+
+    /* Bench Grid / List */
+    .bench-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+      gap: 8px;
+    }
+
+    .bench-player-card {
+      min-height: 54px;
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .bench-player-card.selected {
+      background: #fef9c3;
+      border-color: #ca8a04;
+      box-shadow: 0 0 0 3px var(--token-selected-ring);
+    }
+
+    .bench-player-card:active {
+      transform: scale(0.98);
+    }
+
+    .bench-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .mini-token {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--token-sky);
+      border: 2px solid var(--token-navy);
+      color: var(--token-navy);
+      font-weight: 900;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bench-info {
+      min-width: 0;
+    }
+
+    .bench-name {
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bench-meta {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Timeline Feed */
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 12px;
+      background: var(--bg-elevated);
+      border: 1.5px solid var(--border-subtle);
+      border-left: 5px solid var(--primary);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .timeline-item.event-goal-us {
+      border-left-color: var(--success-bright);
+      background: #f0fdf4;
+    }
+
+    .timeline-item.event-goal-them {
+      border-left-color: var(--danger);
+      background: #fef2f2;
+    }
+
+    .timeline-item.event-sub {
+      border-left-color: var(--primary);
+    }
+
+    .timeline-item.event-card {
+      border-left-color: var(--warning);
+      background: #fefce8;
+    }
+
+    .timeline-time {
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      background: #e2e8f0;
+      padding: 3px 7px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    /* ==========================================================================
+       6. FORMS, INPUTS & TABLES (LINEUP, SQUAD & SEASON STATS)
+       ========================================================================== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      letter-spacing: 0.03em;
+    }
+
+    .form-input, .form-select {
+      min-height: var(--touch-min);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--border-strong);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .segmented-control {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: #dde5ef;
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--border-strong);
+    }
+
+    .seg-btn {
+      min-height: 44px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--text-secondary);
+      font-weight: 900;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+
+    .seg-btn.active {
+      background: var(--bg-header);
+      color: #ffffff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Statistics Table */
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+      font-size: 0.86rem;
+    }
+
+    .stats-table th {
+      background: var(--bg-header);
+      color: #ffffff;
+      font-weight: 900;
+      text-align: center;
+      padding: 10px 6px;
+      border: 1px solid #334155;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .stats-table th:first-child,
+    .stats-table td:first-child {
+      text-align: left;
+      padding-left: 10px;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+    }
+
+    .stats-table td:first-child {
+      background: var(--bg-surface);
+      font-weight: 800;
+      border-right: 2px solid var(--border-subtle);
+    }
+
+    .stats-table tr:nth-child(even) td {
+      background: var(--bg-elevated);
+    }
+
+    .stats-table tr:nth-child(even) td:first-child {
+      background: var(--bg-elevated);
+    }
+
+    .stats-table td {
+      padding: 10px 6px;
+      text-align: center;
+      border-bottom: 1.5px solid var(--border-subtle);
+      font-weight: 700;
+    }
+
+    /* Roster Row */
+    .roster-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .roster-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-strong);
+      border-radius: var(--radius-md);
+    }
+
+    .roster-item.unavailable {
+      opacity: 0.6;
+      background: #e2e8f0;
+      border-style: dashed;
+    }
+
+    /* ==========================================================================
+       7. FIXED BOTTOM NAVIGATION BAR
+       ========================================================================== */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 540px;
+      height: var(--nav-height);
+      background: var(--bg-header);
+      border-top: 3px solid var(--border-strong);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      z-index: 50;
+    }
+
+    .nav-tab {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-weight: 800;
+      font-size: 0.76rem;
+      cursor: pointer;
+      min-height: var(--touch-min);
+      padding: 6px 4px;
+      position: relative;
+    }
+
+    .nav-tab.active {
+      color: #ffffff;
+      background: rgba(114, 194, 235, 0.14);
+    }
+
+    .nav-tab.active::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 16%;
+      right: 16%;
+      height: 4px;
+      background: var(--token-sky);
+      border-radius: 0 0 4px 4px;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ==========================================================================
+       8. MODALS, BOTTOM SHEETS & TOAST NOTIFICATIONS
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 13, 25, 0.72);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 540px;
+      max-height: 90dvh;
+      background: var(--bg-surface);
+      border-top: 4px solid var(--border-strong);
+      border-radius: 20px 20px 0 0;
+      padding: 16px;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.18s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0.5; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      border-bottom: 2px solid var(--border-subtle);
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      margin: 0;
+    }
+
+    .toast-banner {
+      position: fixed;
+      top: 64px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: #064e3b;
+      color: #ffffff;
+      border: 2px solid #34d399;
+      padding: 12px 18px;
+      border-radius: var(--radius-full);
+      font-weight: 900;
+      font-size: 0.9rem;
+      z-index: 120;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      max-width: 92vw;
+      text-align: center;
+    }
+
+    .toast-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .helper-banner {
+      background: #e0f2fe;
+      border: 2px solid #0284c7;
+      color: #0c4a6e;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.84rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .whatsapp-preview {
+      background: #dcf8c6;
+      border: 2px solid #15803d;
+      color: #071318;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.83rem;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      max-height: 280px;
+      overflow-y: auto;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- TOP BAR WITH WAKE LOCK STATUS -->
+    <header class="top-bar">
+      <div class="brand-title">
+        <span class="brand-dot"></span>
+        <span>Matchday</span>
+      </div>
+      <button type="button" id="wakeLockBtn" class="wakelock-pill" onclick="App.toggleWakeLock(true)">
+        <span class="wakelock-indicator"></span>
+        <span id="wakeLockText">Screen Lock: Auto</span>
+      </button>
+    </header>
+
+    <!-- PERSISTENT SCORELINE & CLOCK HEADER (HOME ALWAYS LEFT, AWAY ALWAYS RIGHT) -->
+    <section class="scoreboard-card" aria-label="Scoreboard">
+      <div class="scoreboard-grid">
+        <!-- HOME TEAM (STRICTLY LEFT) -->
+        <div class="team-col home-col">
+          <span id="homeVenueBadge" class="venue-tag is-us">HOME (US)</span>
+          <div id="homeTeamName" class="team-name-display">Woodley United</div>
+        </div>
+
+        <!-- SCORE DIGITS -->
+        <div class="score-center">
+          <div class="score-digits">
+            <span id="homeScoreDigit">0</span>
+            <span class="score-divider">–</span>
+            <span id="awayScoreDigit">0</span>
+          </div>
+        </div>
+
+        <!-- AWAY TEAM (STRICTLY RIGHT) -->
+        <div class="team-col away-col">
+          <span id="awayVenueBadge" class="venue-tag">AWAY</span>
+          <div id="awayTeamName" class="team-name-display">Reading Royals</div>
+        </div>
+      </div>
+
+      <!-- CLOCK & PERIOD STATUS -->
+      <div class="clock-bar">
+        <div class="clock-readout-wrap">
+          <span id="periodBadge" class="period-badge">PRE-MATCH</span>
+          <span id="clockDigits" class="clock-digits">00:00</span>
+          <span id="stoppageBadge" class="stoppage-badge" style="display: none;">+00:00</span>
+        </div>
+        <div class="clock-nudge-group" id="clockNudgeGroup">
+          <button type="button" class="btn-nudge" onclick="App.adjustClock(-60)" title="Minus 1 Minute">-1m</button>
+          <button type="button" class="btn-nudge" onclick="App.adjustClock(60)" title="Plus 1 Minute">+1m</button>
+        </div>
+      </div>
+
+      <!-- CONTEXTUAL CLOCK CONTROLS -->
+      <div id="clockControlsRow" class="clock-controls-row"></div>
+    </section>
+
+    <!-- ========================================================================
+         TAB 1: LIVE MATCH COCKPIT
+         ======================================================================== -->
+    <main id="view-match" class="view-section active section-pad">
+      <div id="matchSwapBanner" class="helper-banner" style="display: none;">
+        <span id="matchSwapText">Select a player to swap</span>
+        <button type="button" class="btn btn-neutral" style="min-height:36px; padding:4px 10px;" onclick="App.clearSelection()">Cancel</button>
+      </div>
+
+      <!-- INTERACTIVE PITCH -->
+      <div id="matchPitch" class="pitch-wrapper">
+        <div class="pitch-lines">
+          <div class="pitch-box-top"></div>
+          <div class="pitch-six-top"></div>
+          <div class="pitch-halfway"></div>
+          <div class="pitch-center-circle"></div>
+          <div class="pitch-center-spot"></div>
+          <div class="pitch-box-bottom"></div>
+          <div class="pitch-six-bottom"></div>
+        </div>
+        <div class="pitch-banner-overlay">
+          <span id="matchFormationBadge" class="pitch-formation-tag">4-3-3</span>
+          <span class="pitch-formation-tag">Tap Player for Actions</span>
+        </div>
+        <div id="matchPitchTokens"></div>
+      </div>
+
+      <!-- TOUCHLINE QUICK-ACTION BUTTONS -->
+      <div class="quick-actions-grid">
+        <button type="button" class="quick-btn btn-success" onclick="App.openGoalUsModal()">
+          <span class="qb-icon">⚽</span>
+          <span>Goal: Us</span>
+        </button>
+        <button type="button" class="quick-btn btn-danger" onclick="App.logGoalThem()">
+          <span class="qb-icon">🥅</span>
+          <span>Goal: Them</span>
+        </button>
+        <button type="button" class="quick-btn btn-sky" onclick="App.openSubModal()">
+          <span class="qb-icon">🔄</span>
+          <span>Sub</span>
+        </button>
+        <button type="button" class="quick-btn btn-warning" onclick="App.openCardModal()">
+          <span class="qb-icon">🟨🟥</span>
+          <span>Card</span>
+        </button>
+      </div>
+
+      <!-- UNIVERSAL UNDO BAR -->
+      <div id="undoBarContainer" class="undo-bar" style="display: none;">
+        <button type="button" class="btn" onclick="App.undoLastEvent()">
+          <span>↩️ Undo Last:</span>
+          <strong id="undoLabelText">Event</strong>
+        </button>
+      </div>
+
+      <!-- LIVE BENCH & ROTATION MINUTES -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Substitutes & Rotation Minutes</h2>
+          <span id="matchBenchCount" class="badge-count">0 Subs</span>
+        </div>
+        <div id="matchBenchList" class="bench-grid"></div>
+      </div>
+
+      <!-- LIVE MATCH TIMELINE -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Match Timeline</h2>
+          <span id="matchEventsCount" class="badge-count">0 Events</span>
+        </div>
+        <div id="matchTimelineList" class="timeline-list"></div>
+      </div>
+    </main>
+
+    <!-- ========================================================================
+         TAB 2: LINEUP & TACTICAL SETUP
+         ======================================================================== -->
+    <section id="view-lineup" class="view-section section-pad">
+      <div class="panel-card" style="margin-top: 0;">
+        <div class="panel-header">
+          <h2 class="panel-title">Fixture & Format Setup</h2>
+          <button type="button" class="btn btn-neutral" style="min-height: 40px; padding: 6px 10px; font-size: 0.8rem;" onclick="App.promptResetMatch()">New Match</button>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="inputMyTeam">My Team Name</label>
+            <input id="inputMyTeam" class="form-input" type="text" value="Woodley United" oninput="App.updateSetupField('myTeam', this.value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputOpposition">Opposition Name</label>
+            <input id="inputOpposition" class="form-input" type="text" value="Reading Royals" oninput="App.updateSetupField('opposition', this.value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Venue (Home = Left)</label>
+            <div class="segmented-control">
+              <button type="button" id="venueHomeBtn" class="seg-btn active" onclick="App.setVenue('home')">HOME</button>
+              <button type="button" id="venueAwayBtn" class="seg-btn" onclick="App.setVenue('away')">AWAY</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputHalfMins">Half Length (Mins)</label>
+            <input id="inputHalfMins" class="form-input" type="number" min="5" max="60" value="40" onchange="App.updateSetupField('halfMinutes', this.value)" />
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label" for="selectFormation">Tactical Formation</label>
+            <select id="selectFormation" class="form-select" onchange="App.setFormation(this.value)">
+              <option value="4-3-3">4-3-3 (Standard Attacking)</option>
+              <option value="4-2-3-1">4-2-3-1 (Double Pivot)</option>
+              <option value="4-4-2">4-4-2 (Classic Flat)</option>
+              <option value="3-5-2">3-5-2 (Wing-Backs)</option>
+              <option value="3-4-3">3-4-3 (High Press)</option>
+              <option value="5-3-2">5-3-2 (Solid Low Block)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-sky" style="flex:1;" onclick="App.autoFillLineup()">⚡ Auto-Fill XI</button>
+          <button type="button" class="btn btn-neutral" style="flex:1;" onclick="App.clearLineup()">Clear Pitch</button>
+        </div>
+      </div>
+
+      <!-- LINEUP INTERACTIVE PITCH (TAP TO SWAP OR DRAG) -->
+      <div style="margin-top: 12px;">
+        <div class="helper-banner">
+          <span id="lineupHelperText">Tap or drag any two players (pitch or bench) to swap positions.</span>
+        </div>
+
+        <div id="lineupPitch" class="pitch-wrapper">
+          <div class="pitch-lines">
+            <div class="pitch-box-top"></div>
+            <div class="pitch-six-top"></div>
+            <div class="pitch-halfway"></div>
+            <div class="pitch-center-circle"></div>
+            <div class="pitch-center-spot"></div>
+            <div class="pitch-box-bottom"></div>
+            <div class="pitch-six-bottom"></div>
+          </div>
+          <div class="pitch-banner-overlay">
+            <span id="lineupFormationBadge" class="pitch-formation-tag">4-3-3</span>
+            <span id="lineupCountBadge" class="pitch-formation-tag">11 / 11 Selected</span>
+          </div>
+          <div id="lineupPitchTokens"></div>
+        </div>
+      </div>
+
+      <!-- AVAILABLE BENCH IN LINEUP VIEW -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Available Bench</h2>
+          <span id="lineupBenchCount" class="badge-count">0 Available</span>
+        </div>
+        <div id="lineupBenchList" class="bench-grid"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         TAB 3: SQUAD ROSTER & CUMULATIVE SEASON STATISTICS
+         ======================================================================== -->
+    <section id="view-squad" class="view-section section-pad">
+      <div class="segmented-control" style="margin-bottom: 12px;">
+        <button type="button" id="subtabRosterBtn" class="seg-btn active" onclick="App.switchSquadSubtab('roster')">Squad Roster</button>
+        <button type="button" id="subtabStatsBtn" class="seg-btn" onclick="App.switchSquadSubtab('stats')">Season Statistics</button>
+      </div>
+
+      <!-- SUB-VIEW A: SQUAD ROSTER MANAGEMENT -->
+      <div id="squadRosterPane">
+        <div class="panel-card" style="margin-top:0;">
+          <div class="panel-header">
+            <h2 class="panel-title">Add / Manage Squad</h2>
+            <span id="squadTotalBadge" class="badge-count">17 Players</span>
+          </div>
+          <form onsubmit="App.savePlayerForm(event)" class="form-grid">
+            <input type="hidden" id="editPlayerId" value="" />
+            <div class="form-group">
+              <label class="form-label" for="playerNameInput">Player Name</label>
+              <input id="playerNameInput" class="form-input" type="text" placeholder="e.g. Leo Vance" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="playerNumberInput">Squad #</label>
+              <input id="playerNumberInput" class="form-input" type="number" min="1" max="99" placeholder="9" required />
+            </div>
+            <div class="form-group full" style="display:flex; flex-direction:row; gap:8px;">
+              <button type="submit" id="savePlayerBtn" class="btn btn-primary" style="flex:1;">+ Add Player</button>
+              <button type="button" id="cancelEditPlayerBtn" class="btn btn-neutral" style="display:none;" onclick="App.resetPlayerForm()">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2 class="panel-title">Active Squad List</h2>
+            <span style="font-size:0.78rem; font-weight:800; color:var(--text-muted);">Tap status to toggle availability</span>
+          </div>
+          <div id="squadRosterList" class="roster-list"></div>
+        </div>
+      </div>
+
+      <!-- SUB-VIEW B: CUMULATIVE SEASON STATISTICS -->
+      <div id="squadStatsPane" style="display: none;">
+        <div class="panel-card" style="margin-top:0;">
+          <div class="panel-header">
+            <h2 class="panel-title">Cumulative Season Totals</h2>
+            <span id="seasonGamesCountBadge" class="badge-count">0 Matches</span>
+          </div>
+          <p style="margin:0 0 10px 0; font-size:0.83rem; font-weight:700; color:var(--text-secondary);">
+            Automatically updated when Full Time is confirmed. Tap any column header to sort.
+          </p>
+          <div class="table-scroll">
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th onclick="App.sortSeasonStats('name')">Player</th>
+                  <th onclick="App.sortSeasonStats('apps')" title="Total Appearances (Starts + Subs)">Apps (S/Sub)</th>
+                  <th onclick="App.sortSeasonStats('mins')" title="Total Minutes Played">Mins</th>
+                  <th onclick="App.sortSeasonStats('goals')" title="Goals Scored">⚽ G</th>
+                  <th onclick="App.sortSeasonStats('assists')" title="Assists Provided">🎯 A</th>
+                  <th onclick="App.sortSeasonStats('yellows')" title="Yellow Cards">🟨</th>
+                  <th onclick="App.sortSeasonStats('reds')" title="Red Cards">🟥</th>
+                </tr>
+              </thead>
+              <tbody id="seasonStatsBody"></tbody>
+            </table>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-sky" style="flex:1;" onclick="App.copySeasonSummaryWhatsApp()">📋 Copy Season Stats for WhatsApp</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         TAB 4: MATCH HISTORY & ARCHIVES
+         ======================================================================== -->
+    <section id="view-history" class="view-section section-pad">
+      <div class="panel-card" style="margin-top:0;">
+        <div class="panel-header">
+          <h2 class="panel-title">Completed Match Reports</h2>
+          <span id="historyCountBadge" class="badge-count">0 Saved</span>
+        </div>
+        <div id="historyListContainer" class="timeline-list"></div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Data & Backup</h2>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-neutral" style="flex:1;" onclick="App.promptResetDemoData()">Reset All Demo Data</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         FIXED 4-TAB BOTTOM NAVIGATION BAR
+         ======================================================================== -->
+    <nav class="bottom-nav" aria-label="Primary Navigation">
+      <button type="button" id="nav-match" class="nav-tab active" onclick="App.switchTab('match')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        <span>Match</span>
+      </button>
+      <button type="button" id="nav-lineup" class="nav-tab" onclick="App.switchTab('lineup')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Lineup</span>
+      </button>
+      <button type="button" id="nav-squad" class="nav-tab" onclick="App.switchTab('squad')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Squad & Season</span>
+      </button>
+      <button type="button" id="nav-history" class="nav-tab" onclick="App.switchTab('history')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>History</span>
+      </button>
+    </nav>
+
+    <!-- UNIVERSAL MODAL / BOTTOM SHEET -->
+    <div id="modalBackdrop" class="modal-backdrop" onclick="if(event.target === this) App.closeModal()">
+      <div class="modal-sheet" role="dialog" aria-modal="true">
+        <div class="modal-header">
+          <h3 id="modalTitle" class="modal-title">Action</h3>
+          <button type="button" class="btn btn-neutral" style="min-height:42px; min-width:42px; padding:6px 12px;" onclick="App.closeModal()">✕ Close</button>
+        </div>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <!-- TOAST FEEDBACK BANNER -->
+    <div id="toastBanner" class="toast-banner" role="status" aria-live="polite">Saved</div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       MATCHDAY APPLICATION ENGINE (100% OFFLINE VANILLA JS)
+       ========================================================================== */
+    const STORAGE_KEY = 'matchday_coaching_app_v2';
+
+    /* Tactical Formation Coordinate Map (Vertical Pitch: GK at Bottom y=89%, Attack at Top) */
+    const FORMATIONS = {
+      '4-3-3': [
+        { role: 'GK',  x: 50, y: 89 },
+        { role: 'LB',  x: 16, y: 70 },
+        { role: 'LCB', x: 38, y: 73 },
+        { role: 'RCB', x: 62, y: 73 },
+        { role: 'RB',  x: 84, y: 70 },
+        { role: 'LCM', x: 26, y: 47 },
+        { role: 'CM',  x: 50, y: 52 },
+        { role: 'RCM', x: 74, y: 47 },
+        { role: 'LW',  x: 18, y: 21 },
+        { role: 'ST',  x: 50, y: 16 },
+        { role: 'RW',  x: 82, y: 21 }
+      ],
+      '4-2-3-1': [
+        { role: 'GK',  x: 50, y: 89 },
+        { role: 'LB',  x: 16, y: 72 },
+        { role: 'LCB', x: 38, y: 75 },
+        { role: 'RCB', x: 62, y: 75 },
+        { role: 'RB',  x: 84, y: 72 },
+        { role: 'LDM', x: 35, y: 55 },
+        { role: 'RDM', x: 65, y: 55 },
+        { role: 'LAM', x: 20, y: 35 },
+        { role: 'CAM', x: 50, y: 36 },
+        { role: 'RAM', x: 80, y: 35 },
+        { role: 'ST',  x: 50, y: 16 }
+      ],
+      '4-4-2': [
+        { role: 'GK',  x: 50, y: 89 },
+        { role: 'LB',  x: 16, y: 70 },
+        { role: 'LCB', x: 38, y: 73 },
+        { role: 'RCB', x: 62, y: 73 },
+        { role: 'RB',  x: 84, y: 70 },
+        { role: 'LM',  x: 16, y: 45 },
+        { role: 'LCM', x: 38, y: 48 },
+        { role: 'RCM', x: 62, y: 48 },
+        { role: 'RM',  x: 84, y: 45 },
+        { role: 'LST', x: 35, y: 19 },
+        { role: 'RST', x: 65, y: 19 }
+      ],
+      '3-5-2': [
+        { role: 'GK',  x: 50, y: 89 },
+        { role: 'LCB', x: 24, y: 72 },
+        { role: 'CB',  x: 50, y: 74 },
+        { role: 'RCB', x: 76, y: 72 },
+        { role: 'LWB', x: 14, y: 46 },
+        { role: 'LCM', x: 34, y: 50 },
+        { role: 'CDM', x: 50, y: 56 },
+        { role: 'RCM', x: 66, y: 50 },
+        { role: 'RWB', x: 86, y: 46 },
+        { role: 'LST', x: 35, y: 19 },
+        { role: 'RST', x: 65, y: 19 }
+      ],
+      '3-4-3': [
+        { role: 'GK',  x: 50, y: 89 },
+        { role: 'LCB', x: 24, y: 72 },
+        { role: 'CB',  x: 50, y: 74 },
+        { role: 'RCB', x: 76, y: 72 },
+        { role: 'LM',  x: 15, y: 47 },
+        { role: 'LCM', x: 38, y: 50 },
+        { role: 'RCM', x: 62, y: 50 },
+        { role: 'RM',  x: 85, y: 47 },
+        { role: 'LW',  x: 20, y: 21 },
+        { role: 'ST',  x: 50, y: 16 },
+        { role: 'RW',  x: 80, y: 21 }
+      ],
+      '5-3-2': [
+        { role: 'GK',  x: 50, y: 89 },
+        { role: 'LWB', x: 13, y: 66 },
+        { role: 'LCB', x: 31, y: 73 },
+        { role: 'CB',  x: 50, y: 75 },
+        { role: 'RCB', x: 69, y: 73 },
+        { role: 'RWB', x: 87, y: 66 },
+        { role: 'LCM', x: 28, y: 46 },
+        { role: 'CM',  x: 50, y: 50 },
+        { role: 'RCM', x: 72, y: 46 },
+        { role: 'LST', x: 35, y: 19 },
+        { role: 'RST', x: 65, y: 19 }
+      ]
+    };
+
+    /* Default 17-Player Squad (First Names Only) */
+    function createDefaultSquad() {
+      const defaults = [
+        { id: 'p1',  name: 'Aidan',   number: 1,  available: true },
+        { id: 'p2',  name: 'Alayham', number: 2,  available: true },
+        { id: 'p3',  name: 'Archie',  number: 3,  available: true },
+        { id: 'p4',  name: 'Ayush',   number: 4,  available: true },
+        { id: 'p5',  name: 'Ben',     number: 5,  available: true },
+        { id: 'p6',  name: 'Billy',   number: 6,  available: true },
+        { id: 'p7',  name: 'Caleb',   number: 7,  available: true },
+        { id: 'p8',  name: 'Isaiah',  number: 8,  available: true },
+        { id: 'p9',  name: 'Jack',    number: 9,  available: true },
+        { id: 'p10', name: 'Kyle',    number: 10, available: true },
+        { id: 'p11', name: 'Louie',   number: 11, available: true },
+        { id: 'p12', name: 'Martin',  number: 12, available: true },
+        { id: 'p14', name: 'Ranveer', number: 14, available: true },
+        { id: 'p15', name: 'Richard', number: 15, available: true },
+        { id: 'p16', name: 'Romari',  number: 16, available: true },
+        { id: 'p17', name: 'Shaye',   number: 17, available: true },
+        { id: 'p18', name: 'Sohan',   number: 18, available: true }
+      ];
+      return defaults.map(p => ({
+        ...p,
+        stats: {
+          apps: 0,
+          starts: 0,
+          subApps: 0,
+          mins: 0,
+          goals: 0,
+          assists: 0,
+          yellows: 0,
+          reds: 0
+        }
+      }));
+    }
+
+    function createFreshMatchState(squad, prevSetup) {
+      const availableIds = squad.filter(p => p.available).map(p => p.id);
+      const lineup = new Array(11).fill(null);
+      for (let i = 0; i < 11 && i < availableIds.length; i++) {
+        lineup[i] = availableIds[i];
+      }
+      return {
+        id: 'match_' + Date.now(),
+        myTeam: prevSetup?.myTeam || 'Woodley United',
+        opposition: prevSetup?.opposition || 'Reading Royals',
+        venue: prevSetup?.venue || 'home', // 'home' or 'away'
+        halfMinutes: prevSetup?.halfMinutes || 40,
+        formation: prevSetup?.formation || '4-3-3',
+        status: 'PRE', // 'PRE', 'H1', 'HT', 'H2', 'FT'
+        isRunning: false,
+        periodElapsedSec: 0, // seconds elapsed in current half
+        lastTickTimestamp: null,
+        myScore: 0,
+        oppScore: 0,
+        lineup: lineup, // Array of 11 playerIds (or null)
+        redCardedSlots: {}, // slotIndex -> playerId if sent off
+        playerMatchMeta: {}, // playerId -> { started: bool, subbedOn: bool, stints: [{startTotalSec, endTotalSec}], goals, assists, yellows, reds }
+        events: [],
+        undoStack: [],
+        committedToSeason: false
+      };
+    }
+
+    const App = {
+      state: {
+        activeTab: 'match',
+        squadSubtab: 'roster',
+        seasonSortKey: 'mins',
+        seasonSortDir: 'desc',
+        squad: [],
+        match: null,
+        history: []
+      },
+
+      selectedTarget: null, // { type: 'pitch' | 'bench', slotIndex?: number, playerId?: string }
+      wakeLockSentinel: null,
+      tickInterval: null,
+      dragState: null,
+
+      /* ======================================================================
+         INITIALIZATION & LOCALSTORAGE PERSISTENCE
+         ====================================================================== */
+      init() {
+        this.loadState();
+        this.syncClockFromTimestamp();
+        this.renderAll();
+
+        // Start 250ms high-precision UI & clock ticker
+        this.tickInterval = setInterval(() => {
+          this.onTimerTick();
+        }, 250);
+
+        // Re-sync clock and wake lock when returning to tab/phone unlock
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            this.syncClockFromTimestamp();
+            if (this.state.match.isRunning) {
+              this.requestWakeLock();
+            }
+            this.renderAll();
+          }
+        });
+      },
+
+      loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.squad) && parsed.match) {
+              this.state.squad = parsed.squad;
+              this.state.match = parsed.match;
+              this.state.history = Array.isArray(parsed.history) ? parsed.history : [];
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn('Could not parse saved state, initializing defaults:', err);
+        }
+        this.state.squad = createDefaultSquad();
+        this.state.match = createFreshMatchState(this.state.squad);
+        this.state.history = [];
+        this.saveState();
+      },
+
+      saveState() {
+        try {
+          const payload = {
+            squad: this.state.squad,
+            match: this.state.match,
+            history: this.state.history
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        } catch (err) {
+          console.error('Failed saving state to localStorage:', err);
+        }
+      },
+
+      /* ======================================================================
+         SCREEN WAKE LOCK API (DAYLIGHT OUTDOOR DISPLAY LOCK)
+         ====================================================================== */
+      async requestWakeLock() {
+        if (!('wakeLock' in navigator)) {
+          this.updateWakeLockUI(false, 'Unsupported');
+          return;
+        }
+        try {
+          if (!this.wakeLockSentinel) {
+            this.wakeLockSentinel = await navigator.wakeLock.request('screen');
+            this.wakeLockSentinel.addEventListener('release', () => {
+              this.wakeLockSentinel = null;
+              this.updateWakeLockUI(false);
+            });
+          }
+          this.updateWakeLockUI(true);
+        } catch (err) {
+          this.updateWakeLockUI(false);
+        }
+      },
+
+      async releaseWakeLock() {
+        if (this.wakeLockSentinel) {
+          try {
+            await this.wakeLockSentinel.release();
+          } catch (e) {}
+          this.wakeLockSentinel = null;
+        }
+        this.updateWakeLockUI(false);
+      },
+
+      async toggleWakeLock(manualTap) {
+        if (this.wakeLockSentinel) {
+          await this.releaseWakeLock();
+          if (manualTap) this.showToast('Screen Wake Lock Released');
+        } else {
+          await this.requestWakeLock();
+          if (manualTap) {
+            if (this.wakeLockSentinel) {
+              this.showToast('☀️ Screen Awake Locked for Touchline Use');
+            } else {
+              this.showToast('Wake Lock kept automatic by browser');
+            }
+          }
+        }
+      },
+
+      updateWakeLockUI(isActive, customLabel) {
+        const btn = document.getElementById('wakeLockBtn');
+        const txt = document.getElementById('wakeLockText');
+        if (!btn || !txt) return;
+        if (isActive) {
+          btn.classList.add('active');
+          txt.textContent = '☀️ Awake: ON';
+        } else {
+          btn.classList.remove('active');
+          txt.textContent = customLabel || 'Screen Lock: Tap';
+        }
+      },
+
+      /* ======================================================================
+         MATCH CLOCK & TIMESTAMP DELTA ENGINE
+         ====================================================================== */
+      syncClockFromTimestamp() {
+        const m = this.state.match;
+        if (m.isRunning && m.lastTickTimestamp) {
+          const now = Date.now();
+          const deltaSec = Math.max(0, Math.floor((now - m.lastTickTimestamp) / 1000));
+          if (deltaSec > 0) {
+            m.periodElapsedSec += deltaSec;
+            m.lastTickTimestamp += deltaSec * 1000;
+            this.saveState();
+          }
+        }
+      },
+
+      onTimerTick() {
+        const m = this.state.match;
+        if (!m.isRunning) return;
+        const now = Date.now();
+        if (!m.lastTickTimestamp) {
+          m.lastTickTimestamp = now;
+          return;
+        }
+        const deltaSec = Math.floor((now - m.lastTickTimestamp) / 1000);
+        if (deltaSec >= 1) {
+          m.periodElapsedSec += deltaSec;
+          m.lastTickTimestamp += deltaSec * 1000;
+          this.saveState();
+          this.renderScoreboardAndClock();
+          // Refresh live player minute badges every 5 seconds
+          if (m.periodElapsedSec % 5 === 0) {
+            this.renderMatchView();
+          }
+        }
+      },
+
+      /* Returns total cumulative play seconds across the match for stint duration math */
+      getTotalMatchElapsedSec() {
+        const m = this.state.match;
+        const halfSec = (Number(m.halfMinutes) || 40) * 60;
+        if (m.status === 'PRE') return 0;
+        if (m.status === 'H1') return m.periodElapsedSec;
+        if (m.status === 'HT') return m.h1TotalSec || halfSec;
+        if (m.status === 'H2' || m.status === 'FT') {
+          const base = m.h1TotalSec || halfSec;
+          return base + m.periodElapsedSec;
+        }
+        return 0;
+      },
+
+      /* Returns current match clock display & stoppage breakdown */
+      getClockDisplayData() {
+        const m = this.state.match;
+        const halfMins = Number(m.halfMinutes) || 40;
+        const halfSec = halfMins * 60;
+
+        if (m.status === 'PRE') {
+          return { mainClock: '00:00', stoppage: null, minuteLabel: "0'" };
+        }
+        if (m.status === 'HT') {
+          return {
+            mainClock: this.formatMMSS(halfSec),
+            stoppage: null,
+            minuteLabel: `${halfMins}' HT`
+          };
+        }
+
+        const isSecondHalf = (m.status === 'H2' || m.status === 'FT');
+        const baseOffsetSec = isSecondHalf ? halfSec : 0;
+        const regLimitSec = halfSec;
+
+        if (m.periodElapsedSec <= regLimitSec) {
+          const totalDisplaySec = baseOffsetSec + m.periodElapsedSec;
+          const currentMin = Math.floor(totalDisplaySec / 60) + 1;
+          return {
+            mainClock: this.formatMMSS(totalDisplaySec),
+            stoppage: null,
+            minuteLabel: `${Math.min(isSecondHalf ? halfMins * 2 : halfMins, currentMin)}'`
+          };
+        } else {
+          // Stoppage time active!
+          const overSec = m.periodElapsedSec - regLimitSec;
+          const capDisplaySec = baseOffsetSec + regLimitSec;
+          const baseMin = isSecondHalf ? halfMins * 2 : halfMins;
+          const overMin = Math.floor(overSec / 60) + 1;
+          return {
+            mainClock: this.formatMMSS(capDisplaySec),
+            stoppage: `+${this.formatMMSS(overSec)}`,
+            minuteLabel: `${baseMin}+${overMin}'`
+          };
+        }
+      },
+
+      formatMMSS(totalSeconds) {
+        const sec = Math.max(0, Math.floor(totalSeconds));
+        const mm = Math.floor(sec / 60);
+        const ss = sec % 60;
+        return String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+      },
+
+      ensurePlayerMeta(playerId) {
+        const m = this.state.match;
+        if (!m.playerMatchMeta[playerId]) {
+          m.playerMatchMeta[playerId] = {
+            started: false,
+            subbedOn: false,
+            stints: [],
+            goals: 0,
+            assists: 0,
+            yellows: 0,
+            reds: 0
+          };
+        }
+        return m.playerMatchMeta[playerId];
+      },
+
+      getPlayerMatchSeconds(playerId) {
+        const m = this.state.match;
+        const meta = m.playerMatchMeta[playerId];
+        if (!meta || !Array.isArray(meta.stints)) return 0;
+        const nowTotalSec = this.getTotalMatchElapsedSec();
+        let sum = 0;
+        for (const st of meta.stints) {
+          const end = (st.endTotalSec !== null && st.endTotalSec !== undefined) ? st.endTotalSec : nowTotalSec;
+          if (end > st.startTotalSec) {
+            sum += (end - st.startTotalSec);
+          }
+        }
+        return sum;
+      },
+
+      getPlayerMatchMinutes(playerId) {
+        const secs = this.getPlayerMatchSeconds(playerId);
+        if (secs <= 0) return 0;
+        return Math.max(1, Math.round(secs / 60));
+      },
+
+      /* Clock Transitions */
+      startFirstHalf() {
+        const m = this.state.match;
+        const filledCount = m.lineup.filter(Boolean).length;
+        if (filledCount === 0) {
+          this.autoFillLineup();
+        }
+        m.status = 'H1';
+        m.isRunning = true;
+        m.periodElapsedSec = 0;
+        m.lastTickTimestamp = Date.now();
+
+        // Initialize starting XI stints at 0s
+        m.lineup.forEach((pid) => {
+          if (pid) {
+            const meta = this.ensurePlayerMeta(pid);
+            meta.started = true;
+            if (meta.stints.length === 0) {
+              meta.stints.push({ startTotalSec: 0, endTotalSec: null });
+            }
+          }
+        });
+
+        this.requestWakeLock();
+        this.saveState();
+        this.renderAll();
+        this.showToast('⏱️ 1st Half Started!');
+      },
+
+      togglePauseMatch() {
+        const m = this.state.match;
+        this.syncClockFromTimestamp();
+        if (m.isRunning) {
+          m.isRunning = false;
+          m.lastTickTimestamp = null;
+          this.showToast('Clock Paused');
+        } else {
+          m.isRunning = true;
+          m.lastTickTimestamp = Date.now();
+          this.requestWakeLock();
+          this.showToast('Clock Resumed');
+        }
+        this.saveState();
+        this.renderAll();
+      },
+
+      endFirstHalf() {
+        this.syncClockFromTimestamp();
+        const m = this.state.match;
+        m.isRunning = false;
+        m.lastTickTimestamp = null;
+        m.h1TotalSec = Math.max(m.periodElapsedSec, (Number(m.halfMinutes) || 40) * 60);
+        m.status = 'HT';
+        this.saveState();
+        this.renderAll();
+        this.showToast('Half Time Reached');
+      },
+
+      startSecondHalf() {
+        const m = this.state.match;
+        if (!m.h1TotalSec) {
+          m.h1TotalSec = (Number(m.halfMinutes) || 40) * 60;
+        }
+        m.status = 'H2';
+        m.periodElapsedSec = 0;
+        m.isRunning = true;
+        m.lastTickTimestamp = Date.now();
+        this.requestWakeLock();
+        this.saveState();
+        this.renderAll();
+        this.showToast('⏱️ 2nd Half Started!');
+      },
+
+      adjustClock(deltaSeconds) {
+        const m = this.state.match;
+        if (m.status === 'PRE' || m.status === 'FT') return;
+        this.syncClockFromTimestamp();
+        m.periodElapsedSec = Math.max(0, m.periodElapsedSec + deltaSeconds);
+        this.saveState();
+        this.renderAll();
+      },
+
+      promptFullTime() {
+        this.syncClockFromTimestamp();
+        const m = this.state.match;
+        const homeAwayHeader = this.getFormattedScoreHeader(m);
+        const html = `
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:#f1f5f9; border:2px solid #1e293b; padding:12px; border-radius:12px; text-align:center;">
+              <div style="font-size:0.8rem; font-weight:900; color:#475569; text-transform:uppercase;">Confirm Final Score</div>
+              <div style="font-size:1.25rem; font-weight:900; margin-top:4px;">${this.escapeHtml(homeAwayHeader)}</div>
+            </div>
+            <p style="margin:0; font-size:0.9rem; font-weight:700; color:var(--text-secondary);">
+              Confirming Full Time will lock the match clock, calculate final minutes for every player, and save stats into your Season Totals & Match History.
+            </p>
+            <div style="display:flex; gap:10px; margin-top:6px;">
+              <button type="button" class="btn btn-neutral" style="flex:1;" onclick="App.closeModal()">Keep Playing</button>
+              <button type="button" class="btn btn-danger" style="flex:1;" onclick="App.confirmFullTime()">🏁 Confirm Full Time</button>
+            </div>
+          </div>
+        `;
+        this.openModal('Confirm Full Time', html);
+      },
+
+      confirmFullTime() {
+        this.syncClockFromTimestamp();
+        const m = this.state.match;
+        m.isRunning = false;
+        m.lastTickTimestamp = null;
+        m.status = 'FT';
+
+        const finalTotalSec = this.getTotalMatchElapsedSec();
+
+        // Close all active player stints
+        Object.keys(m.playerMatchMeta).forEach(pid => {
+          const meta = m.playerMatchMeta[pid];
+          meta.stints.forEach(st => {
+            if (st.endTotalSec === null || st.endTotalSec === undefined) {
+              st.endTotalSec = finalTotalSec;
+            }
+          });
+        });
+
+        // Commit to cumulative Season Statistics if not already committed
+        if (!m.committedToSeason) {
+          const playerBreakdown = [];
+
+          this.state.squad.forEach(player => {
+            const meta = m.playerMatchMeta[player.id];
+            if (!meta) return;
+            const playedSecs = this.getPlayerMatchSeconds(player.id);
+            const playedMins = playedSecs > 0 ? Math.max(1, Math.round(playedSecs / 60)) : 0;
+            const participated = meta.started || meta.subbedOn || playedMins > 0;
+
+            if (participated) {
+              player.stats.apps += 1;
+              if (meta.started) player.stats.starts += 1;
+              else if (meta.subbedOn) player.stats.subApps += 1;
+              player.stats.mins += playedMins;
+              player.stats.goals += (meta.goals || 0);
+              player.stats.assists += (meta.assists || 0);
+              player.stats.yellows += (meta.yellows || 0);
+              player.stats.reds += (meta.reds || 0);
+
+              playerBreakdown.push({
+                id: player.id,
+                name: player.name,
+                number: player.number,
+                role: meta.started ? 'Starter' : 'Sub',
+                mins: playedMins,
+                goals: meta.goals || 0,
+                assists: meta.assists || 0,
+                yellows: meta.yellows || 0,
+                reds: meta.reds || 0
+              });
+            }
+          });
+
+          const reportRecord = {
+            id: m.id,
+            dateISO: new Date().toISOString(),
+            myTeam: m.myTeam,
+            opposition: m.opposition,
+            venue: m.venue,
+            halfMinutes: m.halfMinutes,
+            formation: m.formation,
+            myScore: m.myScore,
+            oppScore: m.oppScore,
+            events: JSON.parse(JSON.stringify(m.events)),
+            players: playerBreakdown
+          };
+
+          this.state.history.unshift(reportRecord);
+          m.committedToSeason = true;
+        }
+
+        this.releaseWakeLock();
+        this.saveState();
+        this.closeModal();
+        this.renderAll();
+        this.openMatchReportModal(this.state.history[0]?.id || m.id);
+      },
+
+      /* ======================================================================
+         UNIVERSAL UNDO SNAPSHOT SYSTEM
+         ====================================================================== */
+      pushUndoSnapshot(actionLabel) {
+        const m = this.state.match;
+        const snapshot = {
+          label: actionLabel,
+          myScore: m.myScore,
+          oppScore: m.oppScore,
+          lineup: [...m.lineup],
+          redCardedSlots: JSON.parse(JSON.stringify(m.redCardedSlots || {})),
+          playerMatchMeta: JSON.parse(JSON.stringify(m.playerMatchMeta)),
+          events: JSON.parse(JSON.stringify(m.events))
+        };
+        m.undoStack.push(snapshot);
+        if (m.undoStack.length > 20) m.undoStack.shift();
+      },
+
+      undoLastEvent() {
+        const m = this.state.match;
+        if (!m.undoStack || m.undoStack.length === 0) return;
+        const last = m.undoStack.pop();
+        m.myScore = last.myScore;
+        m.oppScore = last.oppScore;
+        m.lineup = last.lineup;
+        m.redCardedSlots = last.redCardedSlots || {};
+        m.playerMatchMeta = last.playerMatchMeta;
+        m.events = last.events;
+        this.saveState();
+        this.renderAll();
+        this.showToast(`↩️ Undid: ${last.label}`);
+      },
+
+      /* ======================================================================
+         LIVE MATCH EVENTS: GOALS, ASSISTS, CARDS & ROLLING SUBSTITUTIONS
+         ====================================================================== */
+      ensureMatchStartedForLiveEvent() {
+        const m = this.state.match;
+        if (m.status === 'PRE') {
+          this.startFirstHalf();
+        }
+      },
+
+      openGoalUsModal(preselectedScorerId = null) {
+        const m = this.state.match;
+        const onPitchPlayers = m.lineup
+          .map((pid, idx) => ({ player: this.getPlayerById(pid), slotIdx: idx }))
+          .filter(item => item.player && !m.redCardedSlots[item.slotIdx]);
+
+        if (onPitchPlayers.length === 0) {
+          this.showToast('Assign players to the pitch first');
+          return;
+        }
+
+        const scorerOptionsHtml = onPitchPlayers.map(({ player }) => `
+          <option value="${player.id}" ${preselectedScorerId === player.id ? 'selected' : ''}>
+            #${player.number} ${this.escapeHtml(player.name)}
+          </option>
+        `).join('');
+
+        const assistOptionsHtml = `<option value="">— Unassisted / Solo / Penalty —</option>` +
+          onPitchPlayers.map(({ player }) => `
+            <option value="${player.id}">
+              #${player.number} ${this.escapeHtml(player.name)}
+            </option>
+          `).join('');
+
+        const html = `
+          <form onsubmit="App.submitGoalUsForm(event)" style="display:flex; flex-direction:column; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="goalScorerSelect">⚽ Goal Scorer</label>
+              <select id="goalScorerSelect" class="form-select" required>
+                ${scorerOptionsHtml}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="goalAssistSelect">🎯 Assist (Optional)</label>
+              <select id="goalAssistSelect" class="form-select">
+                ${assistOptionsHtml}
+              </select>
+            </div>
+            <button type="submit" class="btn btn-success" style="width:100%; margin-top:4px;">
+              ⚽ Confirm Goal for ${this.escapeHtml(m.myTeam)}
+            </button>
+          </form>
+        `;
+        this.openModal(`Goal: ${m.myTeam}`, html);
+      },
+
+      submitGoalUsForm(e) {
+        e.preventDefault();
+        this.ensureMatchStartedForLiveEvent();
+        const scorerId = document.getElementById('goalScorerSelect').value;
+        let assistId = document.getElementById('goalAssistSelect').value;
+        if (assistId === scorerId) assistId = '';
+
+        const scorer = this.getPlayerById(scorerId);
+        const assister = assistId ? this.getPlayerById(assistId) : null;
+        if (!scorer) return;
+
+        const m = this.state.match;
+        const clockInfo = this.getClockDisplayData();
+        this.pushUndoSnapshot(`Goal (#${scorer.number} ${scorer.name})`);
+
+        m.myScore += 1;
+        const scorerMeta = this.ensurePlayerMeta(scorer.id);
+        scorerMeta.goals += 1;
+
+        if (assister) {
+          const assistMeta = this.ensurePlayerMeta(assister.id);
+          assistMeta.assists += 1;
+        }
+
+        const detailText = assister
+          ? `⚽ GOAL! #${scorer.number} ${scorer.name} (🎯 Ast: #${assister.number} ${assister.name})`
+          : `⚽ GOAL! #${scorer.number} ${scorer.name}`;
+
+        m.events.unshift({
+          id: 'ev_' + Date.now(),
+          type: 'goal-us',
+          minute: clockInfo.minuteLabel,
+          text: detailText,
+          scorerId: scorer.id,
+          assistId: assister ? assister.id : null
+        });
+
+        this.saveState();
+        this.closeModal();
+        this.renderAll();
+        this.showToast(`⚽ Goal logged for #${scorer.number} ${scorer.name}!`);
+      },
+
+      logGoalThem() {
+        this.ensureMatchStartedForLiveEvent();
+        const m = this.state.match;
+        const clockInfo = this.getClockDisplayData();
+        this.pushUndoSnapshot(`Goal (${m.opposition})`);
+
+        m.oppScore += 1;
+        m.events.unshift({
+          id: 'ev_' + Date.now(),
+          type: 'goal-them',
+          minute: clockInfo.minuteLabel,
+          text: `🥅 Goal: ${m.opposition}`
+        });
+
+        this.saveState();
+        this.renderAll();
+        this.showToast(`🥅 Goal logged for ${m.opposition}`);
+      },
+
+      openCardModal(preselectedPlayerId = null, preselectedCardType = 'yellow') {
+        const m = this.state.match;
+        const onPitchPlayers = m.lineup
+          .map((pid, idx) => ({ player: this.getPlayerById(pid), slotIdx: idx }))
+          .filter(item => item.player && !m.redCardedSlots[item.slotIdx]);
+
+        if (onPitchPlayers.length === 0) {
+          this.showToast('No active players on pitch');
+          return;
+        }
+
+        const optionsHtml = onPitchPlayers.map(({ player }) => `
+          <option value="${player.id}" ${preselectedPlayerId === player.id ? 'selected' : ''}>
+            #${player.number} ${this.escapeHtml(player.name)}
+          </option>
+        `).join('');
+
+        const html = `
+          <form onsubmit="App.submitCardForm(event)" style="display:flex; flex-direction:column; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="cardPlayerSelect">Select Player</label>
+              <select id="cardPlayerSelect" class="form-select" required>
+                ${optionsHtml}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Card Type</label>
+              <div class="segmented-control">
+                <button type="button" id="cardTypeYellowBtn" class="seg-btn ${preselectedCardType === 'yellow' ? 'active' : ''}" onclick="App.selectCardTypeInModal('yellow')">🟨 Yellow Card</button>
+                <button type="button" id="cardTypeRedBtn" class="seg-btn ${preselectedCardType === 'red' ? 'active' : ''}" onclick="App.selectCardTypeInModal('red')">🟥 Red Card</button>
+              </div>
+              <input type="hidden" id="cardTypeInput" value="${preselectedCardType}" />
+            </div>
+            <button type="submit" class="btn btn-warning" style="width:100%;">Confirm Card</button>
+          </form>
+        `;
+        this.openModal('Log Disciplinary Card', html);
+      },
+
+      selectCardTypeInModal(type) {
+        document.getElementById('cardTypeInput').value = type;
+        document.getElementById('cardTypeYellowBtn').classList.toggle('active', type === 'yellow');
+        document.getElementById('cardTypeRedBtn').classList.toggle('active', type === 'red');
+      },
+
+      submitCardForm(e) {
+        e.preventDefault();
+        const playerId = document.getElementById('cardPlayerSelect').value;
+        const cardType = document.getElementById('cardTypeInput').value;
+        this.logCardForPlayer(playerId, cardType);
+        this.closeModal();
+      },
+
+      logCardForPlayer(playerId, cardType) {
+        this.ensureMatchStartedForLiveEvent();
+        const player = this.getPlayerById(playerId);
+        if (!player) return;
+
+        const m = this.state.match;
+        const clockInfo = this.getClockDisplayData();
+        const meta = this.ensurePlayerMeta(playerId);
+
+        this.pushUndoSnapshot(`${cardType === 'red' ? 'Red' : 'Yellow'} Card (#${player.number} ${player.name})`);
+
+        if (cardType === 'yellow') {
+          meta.yellows += 1;
+          m.events.unshift({
+            id: 'ev_' + Date.now(),
+            type: 'card',
+            minute: clockInfo.minuteLabel,
+            text: `🟨 Yellow Card: #${player.number} ${player.name}`
+          });
+          // Second yellow automatic red check
+          if (meta.yellows >= 2) {
+            meta.reds += 1;
+            this.handlePlayerSentOff(playerId);
+            m.events.unshift({
+              id: 'ev_' + Date.now() + '_r',
+              type: 'card',
+              minute: clockInfo.minuteLabel,
+              text: `🟥 2nd Yellow -> Red Card: #${player.number} ${player.name}`
+            });
+          }
+        } else {
+          meta.reds += 1;
+          this.handlePlayerSentOff(playerId);
+          m.events.unshift({
+            id: 'ev_' + Date.now(),
+            type: 'card',
+            minute: clockInfo.minuteLabel,
+            text: `🟥 Red Card: #${player.number} ${player.name}`
+          });
+        }
+
+        this.saveState();
+        this.renderAll();
+        this.showToast(`Card logged for #${player.number} ${player.name}`);
+      },
+
+      handlePlayerSentOff(playerId) {
+        const m = this.state.match;
+        const slotIdx = m.lineup.indexOf(playerId);
+        const nowTotalSec = this.getTotalMatchElapsedSec();
+        const meta = this.ensurePlayerMeta(playerId);
+        meta.stints.forEach(st => {
+          if (st.endTotalSec === null) st.endTotalSec = nowTotalSec;
+        });
+        if (slotIdx !== -1) {
+          m.redCardedSlots[slotIdx] = playerId;
+        }
+      },
+
+      /* Rolling Substitution Modal & Execution */
+      openSubModal(preselectedOffPlayerId = null, preselectedOnPlayerId = null) {
+        const m = this.state.match;
+        const onPitchPlayers = m.lineup
+          .map((pid, idx) => ({ player: this.getPlayerById(pid), slotIdx: idx }))
+          .filter(item => item.player && !m.redCardedSlots[item.slotIdx]);
+
+        const benchPlayers = this.getAvailableBenchPlayers();
+
+        if (onPitchPlayers.length === 0 || benchPlayers.length === 0) {
+          this.showToast('Need active players on both pitch and bench to make a sub');
+          return;
+        }
+
+        const offOptionsHtml = onPitchPlayers.map(({ player, slotIdx }) => {
+          const role = (FORMATIONS[m.formation] || FORMATIONS['4-3-3'])[slotIdx]?.role || '';
+          const mins = this.getPlayerMatchMinutes(player.id);
+          return `
+            <option value="${player.id}" ${preselectedOffPlayerId === player.id ? 'selected' : ''}>
+              [${role}] #${player.number} ${this.escapeHtml(player.name)} (${mins}m played)
+            </option>
+          `;
+        }).join('');
+
+        // Sort bench players by fewest minutes played first to assist equal playing time
+        const sortedBench = [...benchPlayers].sort((a, b) => this.getPlayerMatchSeconds(a.id) - this.getPlayerMatchSeconds(b.id));
+
+        const onOptionsHtml = sortedBench.map(player => {
+          const mins = this.getPlayerMatchMinutes(player.id);
+          return `
+            <option value="${player.id}" ${preselectedOnPlayerId === player.id ? 'selected' : ''}>
+              #${player.number} ${this.escapeHtml(player.name)} — ${mins}m played
+            </option>
+          `;
+        }).join('');
+
+        const html = `
+          <form onsubmit="App.submitSubForm(event)" style="display:flex; flex-direction:column; gap:12px;">
+            <div class="form-group">
+              <label class="form-label" for="subOffSelect">🔻 Player Coming OFF (Pitch)</label>
+              <select id="subOffSelect" class="form-select" required>
+                ${offOptionsHtml}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="subOnSelect">🔺 Player Coming ON (Bench — Sorted by Least Mins)</label>
+              <select id="subOnSelect" class="form-select" required>
+                ${onOptionsHtml}
+              </select>
+            </div>
+            <button type="submit" class="btn btn-sky" style="width:100%; margin-top:4px;">
+              🔄 Confirm Rolling Substitution
+            </button>
+          </form>
+        `;
+        this.openModal('Rolling Substitution', html);
+      },
+
+      submitSubForm(e) {
+        e.preventDefault();
+        const offId = document.getElementById('subOffSelect').value;
+        const onId = document.getElementById('subOnSelect').value;
+        this.executeSubstitution(offId, onId);
+        this.closeModal();
+      },
+
+      executeSubstitution(offPlayerId, onPlayerId) {
+        const m = this.state.match;
+        const slotIdx = m.lineup.indexOf(offPlayerId);
+        if (slotIdx === -1) return;
+
+        const offPlayer = this.getPlayerById(offPlayerId);
+        const onPlayer = this.getPlayerById(onPlayerId);
+        if (!offPlayer || !onPlayer) return;
+
+        // If still pre-match, just swap without logging a match event
+        if (m.status === 'PRE') {
+          m.lineup[slotIdx] = onPlayerId;
+          this.saveState();
+          this.renderAll();
+          this.showToast(`Swapped #${onPlayer.number} ${onPlayer.name} into starting XI`);
+          return;
+        }
+
+        this.syncClockFromTimestamp();
+        const nowTotalSec = this.getTotalMatchElapsedSec();
+        const clockInfo = this.getClockDisplayData();
+
+        this.pushUndoSnapshot(`Sub (#${onPlayer.number} ON for #${offPlayer.number})`);
+
+        // End stint for player coming OFF
+        const offMeta = this.ensurePlayerMeta(offPlayerId);
+        offMeta.stints.forEach(st => {
+          if (st.endTotalSec === null) st.endTotalSec = nowTotalSec;
+        });
+
+        // Start stint for player coming ON
+        const onMeta = this.ensurePlayerMeta(onPlayerId);
+        if (!onMeta.started) onMeta.subbedOn = true;
+        onMeta.stints.push({ startTotalSec: nowTotalSec, endTotalSec: null });
+
+        // Replace on pitch
+        m.lineup[slotIdx] = onPlayerId;
+
+        m.events.unshift({
+          id: 'ev_' + Date.now(),
+          type: 'sub',
+          minute: clockInfo.minuteLabel,
+          text: `🔄 SUB: #${onPlayer.number} ${onPlayer.name} ON for #${offPlayer.number} ${offPlayer.name}`
+        });
+
+        this.clearSelection();
+        this.saveState();
+        this.renderAll();
+        this.showToast(`🔄 #${onPlayer.number} ${onPlayer.name} subbed ON`);
+      },
+
+      /* Interactive Pitch Player Quick-Action Sheet */
+      openPlayerQuickSheet(slotIdx) {
+        const m = this.state.match;
+        const playerId = m.lineup[slotIdx];
+        const coords = (FORMATIONS[m.formation] || FORMATIONS['4-3-3'])[slotIdx];
+
+        if (!playerId) {
+          // Empty slot: prompt bench selection to assign
+          this.openAssignEmptySlotModal(slotIdx);
+          return;
+        }
+
+        const player = this.getPlayerById(playerId);
+        if (!player) return;
+
+        const mins = this.getPlayerMatchMinutes(player.id);
+        const meta = m.playerMatchMeta[player.id] || { goals: 0, assists: 0, yellows: 0, reds: 0 };
+        const isSentOff = Boolean(m.redCardedSlots[slotIdx]);
+
+        const benchPlayers = this.getAvailableBenchPlayers()
+          .sort((a, b) => this.getPlayerMatchSeconds(a.id) - this.getPlayerMatchSeconds(b.id));
+
+        const quickSubButtons = benchPlayers.length > 0
+          ? benchPlayers.map(bp => {
+              const bpMins = this.getPlayerMatchMinutes(bp.id);
+              return `
+                <button type="button" class="bench-player-card" style="width:100%;" onclick="App.executeSubstitution('${player.id}', '${bp.id}'); App.closeModal();">
+                  <div class="bench-left">
+                    <div class="mini-token">${bp.number}</div>
+                    <div class="bench-info" style="text-align:left;">
+                      <div class="bench-name">${this.escapeHtml(bp.name)}</div>
+                      <div class="bench-meta">⏱️ ${bpMins} min played</div>
+                    </div>
+                  </div>
+                  <span style="font-weight:900; font-size:0.82rem; color:var(--primary-dark);">SUB ON 🔺</span>
+                </button>
+              `;
+            }).join('')
+          : `<div style="font-size:0.85rem; color:var(--text-muted); font-weight:700;">No available substitutes on bench.</div>`;
+
+        const html = `
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-header); color:#fff; padding:12px; border-radius:12px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="mini-token" style="width:44px; height:44px; font-size:1.1rem;">${player.number}</div>
+                <div>
+                  <div style="font-weight:900; font-size:1.05rem;">${this.escapeHtml(player.name)}</div>
+                  <div style="font-size:0.8rem; color:#93c5fd; font-weight:800;">Position: ${coords.role} • ⏱️ ${mins} mins played</div>
+                </div>
+              </div>
+              <div style="text-align:right; font-size:0.82rem; font-weight:900;">
+                ⚽ ${meta.goals || 0} &nbsp; 🎯 ${meta.assists || 0}
+              </div>
+            </div>
+
+            ${isSentOff ? `<div style="background:#fef2f2; border:2px solid #dc2626; color:#991b1b; padding:10px; border-radius:8px; font-weight:900; text-align:center;">🟥 Player Sent Off (Red Card)</div>` : `
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <button type="button" class="btn btn-success" onclick="App.closeModal(); App.openGoalUsModal('${player.id}')">
+                  ⚽ Log Goal
+                </button>
+                <button type="button" class="btn btn-warning" onclick="App.logCardForPlayer('${player.id}', 'yellow'); App.closeModal();">
+                  🟨 Yellow Card
+                </button>
+                <button type="button" class="btn btn-danger" onclick="App.logCardForPlayer('${player.id}', 'red'); App.closeModal();">
+                  🟥 Red Card
+                </button>
+                <button type="button" class="btn btn-neutral" onclick="App.startPitchSwap(${slotIdx}); App.closeModal();">
+                  ⇄ Swap Position
+                </button>
+              </div>
+
+              <div style="border-top:2px solid var(--border-subtle); padding-top:10px;">
+                <div style="font-size:0.8rem; font-weight:900; text-transform:uppercase; color:var(--text-secondary); margin-bottom:8px;">
+                  🔄 Instant Roll-On Substitute (Sorted by Least Minutes)
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;">
+                  ${quickSubButtons}
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+        this.openModal(`#${player.number} ${player.name}`, html);
+      },
+
+      openAssignEmptySlotModal(slotIdx) {
+        const m = this.state.match;
+        const coords = (FORMATIONS[m.formation] || FORMATIONS['4-3-3'])[slotIdx];
+        const bench = this.getAvailableBenchPlayers();
+        if (bench.length === 0) {
+          this.showToast('No unassigned available players on bench');
+          return;
+        }
+        const listHtml = bench.map(bp => `
+          <button type="button" class="bench-player-card" style="width:100%;" onclick="App.assignPlayerToSlot('${bp.id}', ${slotIdx}); App.closeModal();">
+            <div class="bench-left">
+              <div class="mini-token">${bp.number}</div>
+              <div class="bench-info" style="text-align:left;">
+                <div class="bench-name">${this.escapeHtml(bp.name)}</div>
+              </div>
+            </div>
+            <span style="font-weight:900; color:var(--primary-dark);">Assign to ${coords.role} ＋</span>
+          </button>
+        `).join('');
+
+        this.openModal(`Assign Player to ${coords.role}`, `<div style="display:flex; flex-direction:column; gap:8px;">${listHtml}</div>`);
+      },
+
+      assignPlayerToSlot(playerId, slotIdx) {
+        const m = this.state.match;
+        m.lineup[slotIdx] = playerId;
+        if (m.status === 'H1' || m.status === 'H2') {
+          const meta = this.ensurePlayerMeta(playerId);
+          meta.subbedOn = true;
+          meta.stints.push({ startTotalSec: this.getTotalMatchElapsedSec(), endTotalSec: null });
+        }
+        this.saveState();
+        this.renderAll();
+      },
+
+      /* ======================================================================
+         LINEUP & PITCH TAP-TO-SWAP + TOUCH DRAG-AND-DROP
+         ====================================================================== */
+      startPitchSwap(slotIdx) {
+        this.selectedTarget = { type: 'pitch', slotIndex: slotIdx };
+        this.renderAll();
+      },
+
+      clearSelection() {
+        this.selectedTarget = null;
+        this.renderAll();
+      },
+
+      handlePitchSlotTap(slotIdx, context) {
+        const m = this.state.match;
+
+        // If a swap selection is already active, perform the swap!
+        if (this.selectedTarget) {
+          if (this.selectedTarget.type === 'pitch') {
+            const fromSlot = this.selectedTarget.slotIndex;
+            if (fromSlot !== slotIdx) {
+              const temp = m.lineup[fromSlot];
+              m.lineup[fromSlot] = m.lineup[slotIdx];
+              m.lineup[slotIdx] = temp;
+              this.saveState();
+              this.showToast('Positions Swapped');
+            }
+            this.selectedTarget = null;
+            this.renderAll();
+            return;
+          } else if (this.selectedTarget.type === 'bench') {
+            const benchPlayerId = this.selectedTarget.playerId;
+            const currentPitchPlayerId = m.lineup[slotIdx];
+            if (context === 'match' && (m.status === 'H1' || m.status === 'H2') && currentPitchPlayerId) {
+              this.executeSubstitution(currentPitchPlayerId, benchPlayerId);
+            } else {
+              m.lineup[slotIdx] = benchPlayerId;
+              this.saveState();
+            }
+            this.selectedTarget = null;
+            this.renderAll();
+            return;
+          }
+        }
+
+        // Otherwise, in Match tab open Quick Action Sheet; in Lineup tab select for swap
+        if (context === 'match') {
+          this.openPlayerQuickSheet(slotIdx);
+        } else {
+          if (!m.lineup[slotIdx]) {
+            this.openAssignEmptySlotModal(slotIdx);
+          } else {
+            this.selectedTarget = { type: 'pitch', slotIndex: slotIdx };
+            this.renderAll();
+          }
+        }
+      },
+
+      handleBenchPlayerTap(playerId, context) {
+        const m = this.state.match;
+        if (this.selectedTarget) {
+          if (this.selectedTarget.type === 'pitch') {
+            const slotIdx = this.selectedTarget.slotIndex;
+            const pitchPlayerId = m.lineup[slotIdx];
+            if (context === 'match' && (m.status === 'H1' || m.status === 'H2') && pitchPlayerId) {
+              this.executeSubstitution(pitchPlayerId, playerId);
+            } else {
+              m.lineup[slotIdx] = playerId;
+              this.saveState();
+              this.showToast('Lineup Updated');
+            }
+            this.selectedTarget = null;
+            this.renderAll();
+            return;
+          } else if (this.selectedTarget.type === 'bench' && this.selectedTarget.playerId === playerId) {
+            this.selectedTarget = null;
+            this.renderAll();
+            return;
+          }
+        }
+
+        if (context === 'match' && (m.status === 'H1' || m.status === 'H2')) {
+          this.openSubModal(null, playerId);
+        } else {
+          // If there is an empty pitch slot in lineup mode, fill it or select bench player
+          this.selectedTarget = { type: 'bench', playerId };
+          this.renderAll();
+        }
+      },
+
+      /* Pointer Drag-and-Drop on Pitch Tokens */
+      bindPitchTokenDrag(el, slotIdx, context) {
+        let startX = 0;
+        let startY = 0;
+        let moved = false;
+
+        const onPointerDown = (e) => {
+          if (e.button !== undefined && e.button !== 0) return;
+          startX = e.clientX;
+          startY = e.clientY;
+          moved = false;
+          el.setPointerCapture(e.pointerId);
+        };
+
+        const onPointerMove = (e) => {
+          if (!el.hasPointerCapture(e.pointerId)) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          if (!moved && Math.hypot(dx, dy) > 10) {
+            moved = true;
+            el.classList.add('dragging');
+          }
+          if (moved) {
+            el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.12)`;
+          }
+        };
+
+        const onPointerUp = (e) => {
+          if (!el.hasPointerCapture(e.pointerId)) return;
+          el.releasePointerCapture(e.pointerId);
+          el.classList.remove('dragging');
+          el.style.transform = '';
+
+          if (!moved) {
+            this.handlePitchSlotTap(slotIdx, context);
+            return;
+          }
+
+          // Check if dropped onto another pitch slot
+          const pitchContainer = el.parentElement;
+          const slots = Array.from(pitchContainer.querySelectorAll('.pitch-slot'));
+          let targetIdx = -1;
+          for (const candidate of slots) {
+            const idx = Number(candidate.dataset.slotIndex);
+            if (idx === slotIdx) continue;
+            const rect = candidate.getBoundingClientRect();
+            if (
+              e.clientX >= rect.left - 12 &&
+              e.clientX <= rect.right + 12 &&
+              e.clientY >= rect.top - 12 &&
+              e.clientY <= rect.bottom + 12
+            ) {
+              targetIdx = idx;
+              break;
+            }
+          }
+
+          if (targetIdx !== -1) {
+            const m = this.state.match;
+            const temp = m.lineup[slotIdx];
+            m.lineup[slotIdx] = m.lineup[targetIdx];
+            m.lineup[targetIdx] = temp;
+            this.saveState();
+            this.renderAll();
+            this.showToast('Positions Swapped');
+          }
+        };
+
+        el.addEventListener('pointerdown', onPointerDown);
+        el.addEventListener('pointermove', onPointerMove);
+        el.addEventListener('pointerup', onPointerUp);
+        el.addEventListener('pointercancel', onPointerUp);
+      },
+
+      /* ======================================================================
+         LINEUP & MATCH SETUP HELPERS
+         ====================================================================== */
+      updateSetupField(field, value) {
+        const m = this.state.match;
+        if (field === 'halfMinutes') {
+          m.halfMinutes = Math.max(5, Math.min(60, Number(value) || 40));
+        } else {
+          m[field] = value;
+        }
+        this.saveState();
+        this.renderScoreboardAndClock();
+      },
+
+      setVenue(venue) {
+        this.state.match.venue = venue;
+        this.saveState();
+        this.renderAll();
+      },
+
+      setFormation(formation) {
+        if (!FORMATIONS[formation]) return;
+        this.state.match.formation = formation;
+        this.saveState();
+        this.renderAll();
+        this.showToast(`Formation set to ${formation}`);
+      },
+
+      autoFillLineup() {
+        const m = this.state.match;
+        const available = this.state.squad.filter(p => p.available);
+        const alreadyOnPitch = new Set(m.lineup.filter(Boolean));
+
+        for (let i = 0; i < 11; i++) {
+          if (!m.lineup[i]) {
+            const nextPlayer = available.find(p => !alreadyOnPitch.has(p.id));
+            if (nextPlayer) {
+              m.lineup[i] = nextPlayer.id;
+              alreadyOnPitch.add(nextPlayer.id);
+            }
+          }
+        }
+        this.saveState();
+        this.renderAll();
+        this.showToast('⚡ Starting XI Auto-Filled');
+      },
+
+      clearLineup() {
+        const m = this.state.match;
+        if (m.status !== 'PRE') {
+          this.showToast('Cannot clear pitch while match is in progress');
+          return;
+        }
+        m.lineup = new Array(11).fill(null);
+        this.selectedTarget = null;
+        this.saveState();
+        this.renderAll();
+        this.showToast('Pitch Cleared');
+      },
+
+      promptResetMatch() {
+        const html = `
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <p style="margin:0; font-weight:700; color:var(--text-secondary);">
+              Start a fresh match setup? Your Squad Roster, cumulative Season Statistics, and saved Match History will all be kept safe.
+            </p>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-neutral" style="flex:1;" onclick="App.closeModal()">Cancel</button>
+              <button type="button" class="btn btn-primary" style="flex:1;" onclick="App.resetActiveMatch()">Start Fresh Match</button>
+            </div>
+          </div>
+        `;
+        this.openModal('New Match Setup', html);
+      },
+
+      resetActiveMatch() {
+        const prev = this.state.match;
+        this.state.match = createFreshMatchState(this.state.squad, {
+          myTeam: prev.myTeam,
+          opposition: prev.opposition,
+          venue: prev.venue,
+          halfMinutes: prev.halfMinutes,
+          formation: prev.formation
+        });
+        this.selectedTarget = null;
+        this.saveState();
+        this.closeModal();
+        this.renderAll();
+        this.showToast('Ready for New Match');
+      },
+
+      /* ======================================================================
+         SQUAD MANAGEMENT & SEASON STATISTICS
+         ====================================================================== */
+      getPlayerById(id) {
+        if (!id) return null;
+        return this.state.squad.find(p => p.id === id) || null;
+      },
+
+      getAvailableBenchPlayers() {
+        const m = this.state.match;
+        const onPitchSet = new Set(m.lineup.filter(Boolean));
+        const sentOffSet = new Set(Object.values(m.redCardedSlots || {}));
+        return this.state.squad.filter(p => p.available && !onPitchSet.has(p.id) && !sentOffSet.has(p.id));
+      },
+
+      savePlayerForm(e) {
+        e.preventDefault();
+        const editId = document.getElementById('editPlayerId').value;
+        const name = document.getElementById('playerNameInput').value.trim();
+        const number = Number(document.getElementById('playerNumberInput').value);
+        if (!name || !number) return;
+
+        if (editId) {
+          const existing = this.getPlayerById(editId);
+          if (existing) {
+            existing.name = name;
+            existing.number = number;
+            this.showToast(`Updated #${number} ${name}`);
+          }
+        } else {
+          const newPlayer = {
+            id: 'p_' + Date.now(),
+            name,
+            number,
+            available: true,
+            stats: { apps: 0, starts: 0, subApps: 0, mins: 0, goals: 0, assists: 0, yellows: 0, reds: 0 }
+          };
+          this.state.squad.push(newPlayer);
+          this.showToast(`Added #${number} ${name}`);
+        }
+
+        this.resetPlayerForm();
+        this.saveState();
+        this.renderAll();
+      },
+
+      editPlayer(playerId) {
+        const p = this.getPlayerById(playerId);
+        if (!p) return;
+        document.getElementById('editPlayerId').value = p.id;
+        document.getElementById('playerNameInput').value = p.name;
+        document.getElementById('playerNumberInput').value = p.number;
+        document.getElementById('savePlayerBtn').textContent = 'Save Changes';
+        document.getElementById('cancelEditPlayerBtn').style.display = 'inline-flex';
+        document.getElementById('playerNameInput').focus();
+      },
+
+      resetPlayerForm() {
+        document.getElementById('editPlayerId').value = '';
+        document.getElementById('playerNameInput').value = '';
+        document.getElementById('playerNumberInput').value = '';
+        document.getElementById('savePlayerBtn').textContent = '+ Add Player';
+        document.getElementById('cancelEditPlayerBtn').style.display = 'none';
+      },
+
+      togglePlayerAvailability(playerId) {
+        const p = this.getPlayerById(playerId);
+        if (!p) return;
+        p.available = !p.available;
+
+        // If marked unavailable during pre-match, remove from starting lineup
+        const m = this.state.match;
+        if (!p.available && m.status === 'PRE') {
+          const idx = m.lineup.indexOf(playerId);
+          if (idx !== -1) m.lineup[idx] = null;
+        }
+        this.saveState();
+        this.renderAll();
+      },
+
+      deletePlayer(playerId) {
+        const p = this.getPlayerById(playerId);
+        if (!p) return;
+        const m = this.state.match;
+        const idx = m.lineup.indexOf(playerId);
+        if (idx !== -1) m.lineup[idx] = null;
+        this.state.squad = this.state.squad.filter(item => item.id !== playerId);
+        this.saveState();
+        this.renderAll();
+        this.showToast(`Removed ${p.name}`);
+      },
+
+      sortSeasonStats(key) {
+        if (this.state.seasonSortKey === key) {
+          this.state.seasonSortDir = this.state.seasonSortDir === 'desc' ? 'asc' : 'desc';
+        } else {
+          this.state.seasonSortKey = key;
+          this.state.seasonSortDir = key === 'name' ? 'asc' : 'desc';
+        }
+        this.renderSquadAndSeasonView();
+      },
+
+      /* ======================================================================
+         POST-MATCH REPORT & WHATSAPP / WEB SHARE INTEGRATION
+         ====================================================================== */
+      getFormattedScoreHeader(matchObj) {
+        // Strict Convention: HOME team on LEFT, AWAY team on RIGHT
+        if (matchObj.venue === 'home') {
+          return `${matchObj.myTeam} ${matchObj.myScore} – ${matchObj.oppScore} ${matchObj.opposition}`;
+        } else {
+          return `${matchObj.opposition} ${matchObj.oppScore} – ${matchObj.myScore} ${matchObj.myTeam}`;
+        }
+      },
+
+      buildWhatsAppReportText(report) {
+        const headerLine = report.venue === 'home'
+          ? `🏠 *${report.myTeam} ${report.myScore} – ${report.oppScore} ${report.opposition}* (Away)`
+          : `🏠 *${report.opposition} ${report.oppScore} – ${report.myScore} ${report.myTeam}* (Away)`;
+
+        const dateStr = new Date(report.dateISO).toLocaleDateString(undefined, {
+          weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+        });
+
+        const lines = [
+          `📋 *MATCHDAY FULL-TIME REPORT*`,
+          headerLine,
+          `📅 ${dateStr} | ⏱️ ${report.halfMinutes}m Halves | 📐 ${report.formation}`,
+          ``
+        ];
+
+        if (report.events && report.events.length > 0) {
+          lines.push(`*⚡ TIMELINE (Chronological)*`);
+          const chronological = [...report.events].reverse();
+          chronological.forEach(ev => {
+            lines.push(`• ${ev.minute} ${ev.text}`);
+          });
+          lines.push(``);
+        }
+
+        if (report.players && report.players.length > 0) {
+          lines.push(`*👕 SQUAD MINUTES & STATS*`);
+          const sortedPlayers = [...report.players].sort((a, b) => b.mins - a.mins);
+          sortedPlayers.forEach(p => {
+            const badges = [];
+            if (p.goals > 0) badges.push(`⚽x${p.goals}`);
+            if (p.assists > 0) badges.push(`🎯x${p.assists}`);
+            if (p.yellows > 0) badges.push(`🟨`);
+            if (p.reds > 0) badges.push(`🟥`);
+            const extra = badges.length > 0 ? ` (${badges.join(' ')})` : '';
+            lines.push(`• #${p.number} ${p.name}: ⏱️ ${p.mins}'${extra}`);
+          });
+        }
+
+        return lines.join('\n');
+      },
+
+      openMatchReportModal(reportId) {
+        const report = this.state.history.find(r => r.id === reportId);
+        if (!report) return;
+
+        const whatsappText = this.buildWhatsAppReportText(report);
+        const scoreTitle = this.getFormattedScoreHeader(report);
+
+        const html = `
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:var(--bg-header); color:#fff; padding:12px; border-radius:12px; text-align:center;">
+              <div style="font-size:0.75rem; font-weight:800; color:#93c5fd; text-transform:uppercase;">
+                ${report.venue === 'home' ? 'Home Fixture' : 'Away Fixture'} • ${report.halfMinutes}m Halves
+              </div>
+              <div style="font-size:1.2rem; font-weight:900; margin-top:4px;">${this.escapeHtml(scoreTitle)}</div>
+            </div>
+
+            <div>
+              <div class="form-label" style="margin-bottom:6px;">WhatsApp Parent/Team Chat Preview</div>
+              <div class="whatsapp-preview" id="whatsappReportBox">${this.escapeHtml(whatsappText)}</div>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-success" style="flex:1;" onclick="App.copyTextToClipboard( App.buildWhatsAppReportTextById('${report.id}'), '📲 Copied for WhatsApp!' )">
+                📲 Copy for WhatsApp
+              </button>
+              <button type="button" class="btn btn-primary" style="flex:1;" onclick="App.shareMatchReport('${report.id}')">
+                📤 Share Report
+              </button>
+            </div>
+          </div>
+        `;
+        this.openModal('Full-Time Match Report', html);
+      },
+
+      buildWhatsAppReportTextById(reportId) {
+        const report = this.state.history.find(r => r.id === reportId);
+        return report ? this.buildWhatsAppReportText(report) : '';
+      },
+
+      async shareMatchReport(reportId) {
+        const report = this.state.history.find(r => r.id === reportId);
+        if (!report) return;
+        const text = this.buildWhatsAppReportText(report);
+        const title = this.getFormattedScoreHeader(report);
+
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, text });
+            this.showToast('Shared Match Report');
+            return;
+          } catch (err) {
+            // Fallback to clipboard copy if user cancels or share fails
+          }
+        }
+        this.copyTextToClipboard(text, '📲 Report Copied to Clipboard!');
+      },
+
+      copySeasonSummaryWhatsApp() {
+        const lines = [
+          `🏆 *${this.state.match.myTeam.toUpperCase()} — SEASON STATS (${this.state.history.length} Matches)*`,
+          ``
+        ];
+        const sorted = [...this.state.squad].sort((a, b) => b.stats.mins - a.stats.mins);
+        sorted.forEach(p => {
+          const s = p.stats;
+          lines.push(`• #${p.number} *${p.name}*: ${s.apps} apps (${s.mins}') | ⚽ ${s.goals} | 🎯 ${s.assists}`);
+        });
+        this.copyTextToClipboard(lines.join('\n'), '📋 Season Summary Copied for WhatsApp!');
+      },
+
+      copyTextToClipboard(text, toastMsg) {
+        if (!text) return;
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try {
+          document.execCommand('copy');
+          this.showToast(toastMsg || 'Copied to Clipboard!');
+        } catch (err) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => this.showToast(toastMsg || 'Copied!'));
+          }
+        }
+        document.body.removeChild(ta);
+      },
+
+      promptResetDemoData() {
+        const html = `
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <p style="margin:0; font-weight:700; color:var(--text-secondary);">
+              This will reset all players, season statistics, active match state, and match history back to the default 17-player squad.
+            </p>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-neutral" style="flex:1;" onclick="App.closeModal()">Cancel</button>
+              <button type="button" class="btn btn-danger" style="flex:1;" onclick="App.confirmResetDemoData()">Reset Everything</button>
+            </div>
+          </div>
+        `;
+        this.openModal('Reset All Data', html);
+      },
+
+      confirmResetDemoData() {
+        localStorage.removeItem(STORAGE_KEY);
+        this.state.squad = createDefaultSquad();
+        this.state.match = createFreshMatchState(this.state.squad);
+        this.state.history = [];
+        this.selectedTarget = null;
+        this.saveState();
+        this.closeModal();
+        this.renderAll();
+        this.showToast('All data reset to default squad');
+      },
+
+      /* ======================================================================
+         NAVIGATION & UI RENDERING
+         ====================================================================== */
+      switchTab(tabName) {
+        this.state.activeTab = tabName;
+        this.selectedTarget = null;
+        ['match', 'lineup', 'squad', 'history'].forEach(t => {
+          document.getElementById(`view-${t}`).classList.toggle('active', t === tabName);
+          document.getElementById(`nav-${t}`).classList.toggle('active', t === tabName);
+        });
+        this.renderAll();
+      },
+
+      switchSquadSubtab(subtab) {
+        this.state.squadSubtab = subtab;
+        document.getElementById('subtabRosterBtn').classList.toggle('active', subtab === 'roster');
+        document.getElementById('subtabStatsBtn').classList.toggle('active', subtab === 'stats');
+        document.getElementById('squadRosterPane').style.display = subtab === 'roster' ? 'block' : 'none';
+        document.getElementById('squadStatsPane').style.display = subtab === 'stats' ? 'block' : 'none';
+        this.renderSquadAndSeasonView();
+      },
+
+      renderAll() {
+        this.renderScoreboardAndClock();
+        this.renderMatchView();
+        this.renderLineupView();
+        this.renderSquadAndSeasonView();
+        this.renderHistoryView();
+      },
+
+      /* 1. Render Persistent Scoreboard (Home strictly Left, Away strictly Right) */
+      renderScoreboardAndClock() {
+        const m = this.state.match;
+        const isHome = m.venue === 'home';
+
+        const homeNameEl = document.getElementById('homeTeamName');
+        const awayNameEl = document.getElementById('awayTeamName');
+        const homeBadgeEl = document.getElementById('homeVenueBadge');
+        const awayBadgeEl = document.getElementById('awayVenueBadge');
+        const homeScoreEl = document.getElementById('homeScoreDigit');
+        const awayScoreEl = document.getElementById('awayScoreDigit');
+
+        if (isHome) {
+          homeNameEl.textContent = m.myTeam || 'My Team';
+          awayNameEl.textContent = m.opposition || 'Opposition';
+          homeBadgeEl.textContent = 'HOME (US)';
+          homeBadgeEl.classList.add('is-us');
+          awayBadgeEl.textContent = 'AWAY';
+          awayBadgeEl.classList.remove('is-us');
+          homeScoreEl.textContent = m.myScore;
+          awayScoreEl.textContent = m.oppScore;
+        } else {
+          homeNameEl.textContent = m.opposition || 'Opposition';
+          awayNameEl.textContent = m.myTeam || 'My Team';
+          homeBadgeEl.textContent = 'HOME';
+          homeBadgeEl.classList.remove('is-us');
+          awayBadgeEl.textContent = 'AWAY (US)';
+          awayBadgeEl.classList.add('is-us');
+          homeScoreEl.textContent = m.oppScore;
+          awayScoreEl.textContent = m.myScore;
+        }
+
+        // Period badge
+        const periodBadge = document.getElementById('periodBadge');
+        periodBadge.className = 'period-badge';
+        if (m.status === 'PRE') {
+          periodBadge.textContent = 'PRE-MATCH';
+        } else if (m.status === 'H1') {
+          periodBadge.textContent = m.isRunning ? '1ST HALF' : '1ST HALF (PAUSED)';
+          periodBadge.classList.add(m.isRunning ? 'live' : 'paused');
+        } else if (m.status === 'HT') {
+          periodBadge.textContent = 'HALF TIME';
+          periodBadge.classList.add('paused');
+        } else if (m.status === 'H2') {
+          periodBadge.textContent = m.isRunning ? '2ND HALF' : '2ND HALF (PAUSED)';
+          periodBadge.classList.add(m.isRunning ? 'live' : 'paused');
+        } else if (m.status === 'FT') {
+          periodBadge.textContent = 'FULL TIME';
+          periodBadge.classList.add('ft');
+        }
+
+        // Clock Digits & Stoppage
+        const clockData = this.getClockDisplayData();
+        document.getElementById('clockDigits').textContent = clockData.mainClock;
+        const stoppageEl = document.getElementById('stoppageBadge');
+        if (clockData.stoppage) {
+          stoppageEl.style.display = 'inline-block';
+          stoppageEl.textContent = clockData.stoppage;
+        } else {
+          stoppageEl.style.display = 'none';
+        }
+
+        // Clock Controls Row
+        const controlsRow = document.getElementById('clockControlsRow');
+        if (m.status === 'PRE') {
+          controlsRow.innerHTML = `
+            <button type="button" class="btn btn-success" onclick="App.startFirstHalf()">▶️ Start 1st Half (${m.halfMinutes}m)</button>
+          `;
+        } else if (m.status === 'H1') {
+          controlsRow.innerHTML = `
+            <button type="button" class="btn ${m.isRunning ? 'btn-warning' : 'btn-success'}" onclick="App.togglePauseMatch()">
+              ${m.isRunning ? '⏸️ Pause Clock' : '▶️ Resume 1st Half'}
+            </button>
+            <button type="button" class="btn btn-dark" onclick="App.endFirstHalf()">⏱️ Half Time</button>
+          `;
+        } else if (m.status === 'HT') {
+          controlsRow.innerHTML = `
+            <button type="button" class="btn btn-success" onclick="App.startSecondHalf()">▶️ Start 2nd Half</button>
+            <button type="button" class="btn btn-danger" onclick="App.promptFullTime()">🏁 Full Time</button>
+          `;
+        } else if (m.status === 'H2') {
+          controlsRow.innerHTML = `
+            <button type="button" class="btn ${m.isRunning ? 'btn-warning' : 'btn-success'}" onclick="App.togglePauseMatch()">
+              ${m.isRunning ? '⏸️ Pause Clock' : '▶️ Resume 2nd Half'}
+            </button>
+            <button type="button" class="btn btn-danger" onclick="App.promptFullTime()">🏁 Full Time</button>
+          `;
+        } else if (m.status === 'FT') {
+          const latestReportId = this.state.history[0]?.id || m.id;
+          controlsRow.innerHTML = `
+            <button type="button" class="btn btn-sky" onclick="App.openMatchReportModal('${latestReportId}')">📋 View / Share Match Report</button>
+            <button type="button" class="btn btn-neutral" onclick="App.promptResetMatch()">🔄 New Match</button>
+          `;
+        }
+      },
+
+      /* 2. Render Pitch Tokens for Match or Lineup View */
+      renderPitchSurface(containerId, context) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+
+        const m = this.state.match;
+        const coordsList = FORMATIONS[m.formation] || FORMATIONS['4-3-3'];
+
+        coordsList.forEach((coord, slotIdx) => {
+          const playerId = m.lineup[slotIdx];
+          const player = this.getPlayerById(playerId);
+          const isSelected =
+            this.selectedTarget &&
+            this.selectedTarget.type === 'pitch' &&
+            this.selectedTarget.slotIndex === slotIdx;
+
+          const isSentOff = Boolean(m.redCardedSlots && m.redCardedSlots[slotIdx]);
+
+          const slotEl = document.createElement('div');
+          slotEl.className = 'pitch-slot' +
+            (!player ? ' empty' : '') +
+            (isSelected ? ' selected' : '') +
+            (isSentOff ? ' sent-off' : '');
+          slotEl.style.left = coord.x + '%';
+          slotEl.style.top = coord.y + '%';
+          slotEl.dataset.slotIndex = slotIdx;
+
+          if (player) {
+            const mins = this.getPlayerMatchMinutes(player.id);
+            const meta = m.playerMatchMeta[player.id] || {};
+            const shortName = this.formatShortName(player.name);
+
+            let cardFlagHtml = '';
+            if (meta.reds > 0) {
+              cardFlagHtml = `<span class="token-card-flag red" title="Red Card"></span>`;
+            } else if (meta.yellows > 0) {
+              cardFlagHtml = `<span class="token-card-flag yellow" title="Yellow Card"></span>`;
+            }
+
+            const goalBadgeHtml = meta.goals > 0
+              ? `<span class="token-goal-pill">⚽${meta.goals > 1 ? meta.goals : ''}</span>`
+              : '';
+
+            const minsBadgeHtml = (m.status !== 'PRE' || mins > 0)
+              ? `<span class="token-mins-badge">${mins}'</span>`
+              : `<span class="token-mins-badge">${coord.role}</span>`;
+
+            slotEl.innerHTML = `
+              <div class="token-circle">
+                ${cardFlagHtml}
+                <span>${player.number}</span>
+                ${minsBadgeHtml}
+                ${goalBadgeHtml}
+              </div>
+              <div class="token-label">${this.escapeHtml(shortName)}</div>
+            `;
+          } else {
+            slotEl.innerHTML = `
+              <div class="token-circle">${coord.role}</div>
+              <div class="token-label">+ Assign</div>
+            `;
+          }
+
+          this.bindPitchTokenDrag(slotEl, slotIdx, context);
+          container.appendChild(slotEl);
+        });
+      },
+
+      /* 3. Render Live Match Tab */
+      renderMatchView() {
+        const m = this.state.match;
+        document.getElementById('matchFormationBadge').textContent = m.formation;
+
+        // Swap banner
+        const swapBanner = document.getElementById('matchSwapBanner');
+        if (this.selectedTarget) {
+          swapBanner.style.display = 'flex';
+          document.getElementById('matchSwapText').textContent = 'Tap another pitch slot or bench player to complete swap';
+        } else {
+          swapBanner.style.display = 'none';
+        }
+
+        this.renderPitchSurface('matchPitchTokens', 'match');
+
+        // Undo Bar
+        const undoContainer = document.getElementById('undoBarContainer');
+        if (m.undoStack && m.undoStack.length > 0) {
+          const topUndo = m.undoStack[m.undoStack.length - 1];
+          undoContainer.style.display = 'flex';
+          document.getElementById('undoLabelText').textContent = topUndo.label;
+        } else {
+          undoContainer.style.display = 'none';
+        }
+
+        // Live Bench with current match minutes
+        const bench = this.getAvailableBenchPlayers();
+        document.getElementById('matchBenchCount').textContent = `${bench.length} Subs`;
+        const benchContainer = document.getElementById('matchBenchList');
+
+        if (bench.length === 0) {
+          benchContainer.innerHTML = `<div style="grid-column:1/-1; font-size:0.88rem; color:var(--text-muted); font-weight:700;">No unassigned substitutes on bench.</div>`;
+        } else {
+          benchContainer.innerHTML = bench.map(p => {
+            const mins = this.getPlayerMatchMinutes(p.id);
+            const isSelected = this.selectedTarget && this.selectedTarget.type === 'bench' && this.selectedTarget.playerId === p.id;
+            return `
+              <div class="bench-player-card ${isSelected ? 'selected' : ''}" onclick="App.handleBenchPlayerTap('${p.id}', 'match')">
+                <div class="bench-left">
+                  <div class="mini-token">${p.number}</div>
+                  <div class="bench-info">
+                    <div class="bench-name">${this.escapeHtml(p.name)}</div>
+                    <div class="bench-meta">⏱️ ${mins}m played</div>
+                  </div>
+                </div>
+                <span style="font-size:0.78rem; font-weight:900; color:var(--primary-dark);">SUB</span>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // Match Timeline
+        document.getElementById('matchEventsCount').textContent = `${m.events.length} Events`;
+        const timelineEl = document.getElementById('matchTimelineList');
+        if (m.events.length === 0) {
+          timelineEl.innerHTML = `<div style="font-size:0.88rem; color:var(--text-muted); font-weight:700;">No match events logged yet. Tap any player on the pitch or use the buttons above.</div>`;
+        } else {
+          timelineEl.innerHTML = m.events.map(ev => `
+            <div class="timeline-item event-${ev.type}">
+              <span>${this.escapeHtml(ev.text)}</span>
+              <span class="timeline-time">${this.escapeHtml(ev.minute)}</span>
+            </div>
+          `).join('');
+        }
+      },
+
+      /* 4. Render Lineup & Match Setup Tab */
+      renderLineupView() {
+        const m = this.state.match;
+        document.getElementById('inputMyTeam').value = m.myTeam;
+        document.getElementById('inputOpposition').value = m.opposition;
+        document.getElementById('inputHalfMins').value = m.halfMinutes;
+        document.getElementById('selectFormation').value = m.formation;
+
+        document.getElementById('venueHomeBtn').classList.toggle('active', m.venue === 'home');
+        document.getElementById('venueAwayBtn').classList.toggle('active', m.venue === 'away');
+
+        const selectedCount = m.lineup.filter(Boolean).length;
+        document.getElementById('lineupFormationBadge').textContent = m.formation;
+        document.getElementById('lineupCountBadge').textContent = `${selectedCount} / 11 Assigned`;
+
+        this.renderPitchSurface('lineupPitchTokens', 'lineup');
+
+        const bench = this.getAvailableBenchPlayers();
+        document.getElementById('lineupBenchCount').textContent = `${bench.length} Available`;
+        const lineupBenchEl = document.getElementById('lineupBenchList');
+
+        if (bench.length === 0) {
+          lineupBenchEl.innerHTML = `<div style="grid-column:1/-1; font-size:0.88rem; color:var(--text-muted); font-weight:700;">All available players are on the pitch.</div>`;
+        } else {
+          lineupBenchEl.innerHTML = bench.map(p => {
+            const isSelected = this.selectedTarget && this.selectedTarget.type === 'bench' && this.selectedTarget.playerId === p.id;
+            return `
+              <div class="bench-player-card ${isSelected ? 'selected' : ''}" onclick="App.handleBenchPlayerTap('${p.id}', 'lineup')">
+                <div class="bench-left">
+                  <div class="mini-token">${p.number}</div>
+                  <div class="bench-info">
+                    <div class="bench-name">${this.escapeHtml(p.name)}</div>
+                    <div class="bench-meta">Tap to swap</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      },
+
+      /* 5. Render Squad Roster & Cumulative Season Statistics Tab */
+      renderSquadAndSeasonView() {
+        const squad = this.state.squad;
+        const availCount = squad.filter(p => p.available).length;
+        document.getElementById('squadTotalBadge').textContent = `${availCount}/${squad.length} Available`;
+
+        const rosterEl = document.getElementById('squadRosterList');
+        const sortedByNum = [...squad].sort((a, b) => a.number - b.number);
+
+        rosterEl.innerHTML = sortedByNum.map(p => `
+          <div class="roster-item ${p.available ? '' : 'unavailable'}">
+            <div class="bench-left">
+              <div class="mini-token">${p.number}</div>
+              <div>
+                <div class="bench-name">${this.escapeHtml(p.name)}</div>
+                <div style="font-size:0.75rem; font-weight:800; color:${p.available ? 'var(--success)' : 'var(--danger)'};">
+                  ${p.available ? '● Available' : '○ Unavailable'}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn ${p.available ? 'btn-success' : 'btn-neutral'}" style="min-height:42px; min-width:42px; padding:6px 10px; font-size:0.8rem;" onclick="App.togglePlayerAvailability('${p.id}')">
+                ${p.available ? 'Available' : 'Out'}
+              </button>
+              <button type="button" class="btn btn-neutral" style="min-height:42px; min-width:42px; padding:6px 10px; font-size:0.8rem;" onclick="App.editPlayer('${p.id}')">
+                Edit
+              </button>
+              <button type="button" class="btn btn-danger" style="min-height:42px; min-width:42px; padding:6px 10px; font-size:0.8rem;" onclick="App.deletePlayer('${p.id}')">
+                ✕
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+        // Render Cumulative Season Stats Table
+        document.getElementById('seasonGamesCountBadge').textContent = `${this.state.history.length} Finished Matches`;
+        const key = this.state.seasonSortKey;
+        const dir = this.state.seasonSortDir === 'asc' ? 1 : -1;
+
+        const sortedStats = [...squad].sort((a, b) => {
+          if (key === 'name') return a.name.localeCompare(b.name) * dir;
+          return ((a.stats[key] || 0) - (b.stats[key] || 0)) * dir;
+        });
+
+        const tbody = document.getElementById('seasonStatsBody');
+        tbody.innerHTML = sortedStats.map(p => {
+          const s = p.stats;
+          return `
+            <tr>
+              <td>#${p.number} ${this.escapeHtml(p.name)}</td>
+              <td><strong>${s.apps}</strong> <span style="color:var(--text-muted); font-size:0.76rem;">(${s.starts}/${s.subApps})</span></td>
+              <td><strong>${s.mins}'</strong></td>
+              <td>${s.goals}</td>
+              <td>${s.assists}</td>
+              <td>${s.yellows}</td>
+              <td>${s.reds}</td>
+            </tr>
+          `;
+        }).join('');
+      },
+
+      /* 6. Render Match History & Reports Tab */
+      renderHistoryView() {
+        const history = this.state.history;
+        document.getElementById('historyCountBadge').textContent = `${history.length} Saved`;
+        const listEl = document.getElementById('historyListContainer');
+
+        if (history.length === 0) {
+          listEl.innerHTML = `
+            <div style="font-size:0.9rem; color:var(--text-muted); font-weight:700; padding:8px 0;">
+              No completed match reports yet. Finish a match by tapping "Full Time" on the Match tab to generate and archive a report.
+            </div>
+          `;
+          return;
+        }
+
+        listEl.innerHTML = history.map(r => {
+          const scoreLine = this.getFormattedScoreHeader(r);
+          const dateStr = new Date(r.dateISO).toLocaleDateString(undefined, {
+            day: 'numeric', month: 'short', year: 'numeric'
+          });
+          return `
+            <div class="panel-card" style="margin-top:0; padding:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <div>
+                  <div style="font-size:0.75rem; font-weight:900; color:var(--text-muted); text-transform:uppercase;">
+                    ${dateStr} • ${r.venue.toUpperCase()} • ${r.formation}
+                  </div>
+                  <div style="font-size:1.05rem; font-weight:900; margin-top:2px;">
+                    ${this.escapeHtml(scoreLine)}
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sky" style="min-height:44px; padding:8px 12px; font-size:0.84rem;" onclick="App.openMatchReportModal('${r.id}')">
+                  📋 Report & Share
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      /* ======================================================================
+         UTILITIES: MODAL, TOAST & FORMATTING
+         ====================================================================== */
+      openModal(title, bodyHtml) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalBody').innerHTML = bodyHtml;
+        document.getElementById('modalBackdrop').classList.add('open');
+      },
+
+      closeModal() {
+        document.getElementById('modalBackdrop').classList.remove('open');
+      },
+
+      showToast(message) {
+        const banner = document.getElementById('toastBanner');
+        banner.textContent = message;
+        banner.classList.add('show');
+        clearTimeout(this._toastTimer);
+        this._toastTimer = setTimeout(() => {
+          banner.classList.remove('show');
+        }, 2400);
+      },
+
+      formatShortName(fullName) {
+        if (!fullName) return '';
+        const parts = fullName.trim().split(/\s+/);
+        return parts[0];
+      },
+
+      escapeHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      App.init();
+    });
+  </script>
+</body>
+</html>
