@@ -306,6 +306,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     /* PITCH BOARD */
@@ -908,14 +910,14 @@
     <div class="scoreboard-row">
       <div class="score-team-col home">
         <span class="venue-pill us" id="badge-left">HOME (US)</span>
-        <div class="score-team-name" id="team-left">Woodley United</div>
+        <div class="score-team-name" id="team-left">Woodley Utd Spitfires</div>
       </div>
 
       <div class="score-center-box" id="score-display">0 - 0</div>
 
       <div class="score-team-col away">
         <span class="venue-pill them" id="badge-right">AWAY</span>
-        <div class="score-team-name" id="team-right">Reading Royals</div>
+        <div class="score-team-name" id="team-right">Maidenhead Utd Galaxy</div>
       </div>
     </div>
 
@@ -991,11 +993,11 @@
       <div class="form-grid-2">
         <div class="field-group">
           <label class="field-label">My Team Name</label>
-          <input type="text" id="input-my-team" class="day-input" value="Woodley United" onchange="saveSetupConfig()">
+          <input type="text" id="input-my-team" class="day-input" value="Woodley Utd Spitfires" onchange="saveSetupConfig()">
         </div>
         <div class="field-group">
           <label class="field-label">Opposition</label>
-          <input type="text" id="input-opp-team" class="day-input" value="Reading Royals" onchange="saveSetupConfig()">
+          <input type="text" id="input-opp-team" class="day-input" value="Maidenhead Utd Galaxy" onchange="saveSetupConfig()">
         </div>
       </div>
 
@@ -1003,8 +1005,8 @@
         <div class="field-group">
           <label class="field-label">Venue (Home = Left)</label>
           <div class="segmented-toggle">
-            <button type="button" class="seg-btn active" id="seg-home" onclick="setVenue('home')">HOME</button>
-            <button type="button" class="seg-btn" id="seg-away" onclick="setVenue('away')">AWAY</button>
+            <button type="button" class="seg-btn" id="seg-home" onclick="setVenue('home')">HOME</button>
+            <button type="button" class="seg-btn active" id="seg-away" onclick="setVenue('away')">AWAY</button>
           </div>
         </div>
         <div class="field-group">
@@ -1267,12 +1269,19 @@
         </div>
       </div>
 
+      <div class="field-group" style="margin-top:4px;">
+        <label style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:0.82rem; cursor:pointer;">
+          <input type="checkbox" id="past-update-season-chk" checked style="width:20px; height:20px;">
+          <span>Add these minutes/goals to Season Stats table</span>
+        </label>
+      </div>
+
       <div style="margin: 10px 0 6px; font-size:0.78rem; font-weight:900; text-transform:uppercase;">
         Player Participation (Role | Mins | ⚽G | 🎯A)
       </div>
-      <div id="past-players-container" style="max-height:240px; overflow-y:auto; margin-bottom:12px;"></div>
+      <div id="past-players-container" style="max-height:220px; overflow-y:auto; margin-bottom:12px;"></div>
 
-      <button class="btn-start-bar" style="width:100%;" onclick="savePastMatchResult()">💾 Save Result & Update Season Stats</button>
+      <button class="btn-start-bar" style="width:100%;" onclick="savePastMatchResult()">💾 Save Result</button>
     </div>
   </div>
 
@@ -1289,6 +1298,7 @@
     };
 
     const STORAGE_KEY = "matchday_spitfires_v4";
+    const LEGACY_KEYS = ["spitfires_matchday_v3", "matchday_coaching_app_v2", "matchday_coaching_app_v1"];
     let rtdb = null;
     let selectedSwapTarget = null;
     let activeReportText = "";
@@ -1356,9 +1366,9 @@
 
     let state = {
       setup: {
-        myTeam: "Woodley United",
-        oppTeam: "Reading Royals",
-        venue: "home",
+        myTeam: "Woodley Utd Spitfires",
+        oppTeam: "Maidenhead Utd Galaxy",
+        venue: "away",
         halfDuration: 40,
         formation: "4-3-3"
       },
@@ -1383,18 +1393,61 @@
       updatedAt: Date.now()
     };
 
-    // ENSURE HISTORY ARRAY (Converts Firebase object to array)
+    // SANITIZE & NORMALIZE ANY HISTORY ITEM FORMAT
+    function normalizeHistoryItem(item, index) {
+      if (!item || typeof item !== "object") return null;
+      const id = item.id || ("match_rec_" + index + "_" + Date.now());
+      const date = item.date || new Date().toLocaleDateString("en-GB");
+      const header = item.header || (item.fixture ? `${item.fixture} (${item.score || ''})` : item.title || "Archived Match");
+      const report = item.report || item.summary || `⚽ MATCH REPORT\n${header}\n📅 Date: ${date}`;
+      return {
+        id: String(id),
+        date: String(date),
+        header: String(header),
+        report: String(report),
+        deltas: item.deltas || null
+      };
+    }
+
     function ensureHistoryArray() {
-      if (!state.history) {
-        state.history = [];
-      } else if (!Array.isArray(state.history)) {
-        state.history = Object.values(state.history);
+      let rawList = [];
+      if (Array.isArray(state.history)) {
+        rawList = state.history;
+      } else if (state.history && typeof state.history === "object") {
+        rawList = Object.values(state.history);
       }
+      state.history = rawList.map((it, idx) => normalizeHistoryItem(it, idx)).filter(Boolean);
+    }
+
+    // AUTO-SCAN LEGACY LOCAL STORAGE KEYS FOR ANY ARCHIVED MATCHES
+    function recoverLegacyLocalHistory() {
+      ensureHistoryArray();
+      const existingHeaders = new Set(state.history.map(h => h.header + "_" + h.date));
+
+      LEGACY_KEYS.forEach(k => {
+        try {
+          const raw = localStorage.getItem(k);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          let oldHist = parsed.history || parsed.matchHistory || [];
+          if (!Array.isArray(oldHist) && typeof oldHist === "object") {
+            oldHist = Object.values(oldHist);
+          }
+          oldHist.forEach((h, i) => {
+            const norm = normalizeHistoryItem(h, i);
+            if (norm && !existingHeaders.has(norm.header + "_" + norm.date)) {
+              state.history.push(norm);
+              existingHeaders.add(norm.header + "_" + norm.date);
+            }
+          });
+        } catch (e) {}
+      });
     }
 
     // BOOTSTRAP
     window.addEventListener("DOMContentLoaded", () => {
       loadLocal();
+      recoverLegacyLocalHistory();
       initFirebaseSync();
       startSecondLoop();
       requestScreenWakeLock();
@@ -1437,13 +1490,40 @@
             setCloudStatus(snap.val() === true ? "online" : "offline");
           });
 
+          // Also check legacy Firebase path `matchday_data` for any saved history
+          rtdb.ref("matchday_data").once("value", (snap) => {
+            const oldRemote = snap.val();
+            if (oldRemote && oldRemote.history) {
+              let list = Array.isArray(oldRemote.history) ? oldRemote.history : Object.values(oldRemote.history);
+              ensureHistoryArray();
+              const existing = new Set(state.history.map(h => h.header));
+              let added = false;
+              list.forEach((item, idx) => {
+                const norm = normalizeHistoryItem(item, idx);
+                if (norm && !existing.has(norm.header)) {
+                  state.history.push(norm);
+                  added = true;
+                }
+              });
+              if (added) {
+                persist(true);
+                renderHistoryView();
+              }
+            }
+          });
+
           rtdb.ref("spitfires_state_v4").on("value", (snap) => {
             const remote = snap.val();
             if (remote && remote.updatedAt && remote.updatedAt > (state.updatedAt || 0)) {
               const localUndo = state.undoStack || [];
+              const localHist = [...(state.history || [])];
               state = { ...state, ...remote, undoStack: localUndo };
               ensureSeasonStats();
               ensureHistoryArray();
+              // Never overwrite non-empty local history with an empty remote history
+              if (state.history.length === 0 && localHist.length > 0) {
+                state.history = localHist;
+              }
               localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
               renderEverything();
             }
@@ -1460,12 +1540,17 @@
       rtdb.ref("spitfires_state_v4").once("value", (snap) => {
         const remote = snap.val();
         if (remote) {
+          const backupHist = [...(state.history || [])];
           state = { ...state, ...remote };
           ensureSeasonStats();
           ensureHistoryArray();
+          if (state.history.length === 0 && backupHist.length > 0) {
+            state.history = backupHist;
+          }
+          recoverLegacyLocalHistory();
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           renderEverything();
-          alert("Cloud Sync Complete: Latest squad, history & stats loaded.");
+          alert("Cloud Sync Complete!");
         }
         setCloudStatus("online");
       });
@@ -1580,7 +1665,9 @@
       commitMatchToSeasonAndArchive();
       persist();
       renderEverything();
-      openReportModal(state.history[0].report);
+      if (state.history && state.history[0]) {
+        openReportModal(state.history[0].report);
+      }
     }
 
     function adjustClock(secDelta) {
@@ -1810,7 +1897,7 @@
     }
 
     function saveSetupConfig() {
-      state.setup.myTeam = document.getElementById("input-my-team").value.trim() || "Woodley United";
+      state.setup.myTeam = document.getElementById("input-my-team").value.trim() || "Woodley Utd Spitfires";
       state.setup.oppTeam = document.getElementById("input-opp-team").value.trim() || "Opposition";
       state.setup.halfDuration = parseInt(document.getElementById("input-half-mins").value) || 40;
       persist();
@@ -2080,11 +2167,11 @@
         tr.innerHTML = `
           <td>${p.num}</td>
           <td><strong>${p.name}</strong></td>
-          <td>${st.apps} <span style="color:var(--text-muted); font-size:0.75rem;">(${st.starts}/${st.subs})</span></td>
+          <td>${st.apps} <span style="color:var(--text-muted); font-size:0.75rem;">(${st.starts || 0}/${st.subs || 0})</span></td>
           <td>${st.mins}'</td>
           <td>${st.goals}</td>
           <td>${st.assists}</td>
-          <td>${st.yellow}/${st.red}</td>
+          <td>${st.yellow || 0}/${st.red || 0}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -2200,11 +2287,73 @@
       });
     }
 
+    // RECONSTRUCT TODAY'S MATCH REPORT FROM SEASON STATS (WITHOUT DOUBLE COUNTING)
+    function rebuildMatchFromSeasonStats() {
+      ensureSeasonStats();
+      ensureHistoryArray();
+
+      const s = state.setup;
+      const isHome = s.venue === "home";
+      const homeName = isHome ? s.myTeam : s.oppTeam;
+      const awayName = isHome ? s.oppTeam : s.myTeam;
+
+      // Sum our goals from seasonStats
+      let totalGoalsUs = 0;
+      state.squad.forEach(p => {
+        totalGoalsUs += (state.seasonStats[p.id]?.goals || 0);
+      });
+
+      const oppScoreStr = prompt(`Rebuilding Match Report for ${homeName} vs ${awayName}.\n\nSeason Stats show our team scored ${totalGoalsUs} goal(s).\nHow many goals did ${ s.oppTeam } score?`, "0");
+      if (oppScoreStr === null) return;
+      const oppGoals = parseInt(oppScoreStr) || 0;
+
+      const homeScore = isHome ? totalGoalsUs : oppGoals;
+      const awayScore = isHome ? oppGoals : totalGoalsUs;
+      const dateStr = new Date().toLocaleDateString("en-GB");
+
+      let report = `⚽ *MATCHDAY REPORT*\n`;
+      report += `🏟️ *${homeName} ${homeScore} – ${awayScore} ${awayName}*\n`;
+      report += `📅 Date: ${dateStr} (${s.halfDuration}m halves)\n\n`;
+
+      report += `⚽ *GOALS & ASSISTS:*\n`;
+      let hasGoals = false;
+      state.squad.forEach(p => {
+        const st = state.seasonStats[p.id];
+        if (st && (st.goals > 0 || st.assists > 0)) {
+          hasGoals = true;
+          report += `• #${p.num} ${p.name}: ${st.goals ? `⚽ x${st.goals} ` : ''}${st.assists ? `🎯 x${st.assists}` : ''}\n`;
+        }
+      });
+      if (!hasGoals) report += `• None logged\n`;
+
+      report += `\n⏱️ *PLAYER MINUTES:*\n`;
+      state.squad.forEach(p => {
+        const st = state.seasonStats[p.id];
+        if (st && (st.apps > 0 || st.mins > 0)) {
+          const roleLabel = st.starts > 0 ? "Start" : "Sub";
+          report += `• #${p.num} ${p.name}: ${st.mins}' (${roleLabel})${st.goals ? ` ⚽x${st.goals}` : ''}${st.assists ? ` 🎯x${st.assists}` : ''}\n`;
+        }
+      });
+
+      state.history.unshift({
+        id: "match_rebuilt_" + Date.now(),
+        date: dateStr,
+        header: `${homeName} ${homeScore} – ${awayScore} ${awayName}`,
+        report,
+        deltas: null // Null so deleting doesn't wipe season stats unless desired
+      });
+
+      persist(true);
+      renderHistoryView();
+      openReportModal(report);
+    }
+
     function openManualMatchModal() {
       document.getElementById("past-date").value = new Date().toISOString().split("T")[0];
       document.getElementById("past-opp").value = "";
       document.getElementById("past-score-us").value = 0;
       document.getElementById("past-score-them").value = 0;
+      document.getElementById("past-update-season-chk").checked = true;
 
       const defaultFullMins = (state.setup.halfDuration || 40) * 2;
       const container = document.getElementById("past-players-container");
@@ -2241,6 +2390,7 @@
       const opp = document.getElementById("past-opp").value.trim() || "Opposition";
       const scoreUs = parseInt(document.getElementById("past-score-us").value) || 0;
       const scoreThem = parseInt(document.getElementById("past-score-them").value) || 0;
+      const shouldCommitStats = document.getElementById("past-update-season-chk").checked;
 
       const isHome = venue === "home";
       const homeName = isHome ? state.setup.myTeam : opp;
@@ -2260,20 +2410,22 @@
           const goals = parseInt(document.getElementById(`past_g_${p.id}`).value) || 0;
           const assists = parseInt(document.getElementById(`past_a_${p.id}`).value) || 0;
 
-          deltas[p.id] = {
-            apps: 1,
-            starts: role === "start" ? 1 : 0,
-            subs: role === "sub" ? 1 : 0,
-            mins, goals, assists, yellow: 0, red: 0
-          };
+          if (shouldCommitStats) {
+            deltas[p.id] = {
+              apps: 1,
+              starts: role === "start" ? 1 : 0,
+              subs: role === "sub" ? 1 : 0,
+              mins, goals, assists, yellow: 0, red: 0
+            };
 
-          const st = state.seasonStats[p.id];
-          st.apps += 1;
-          st.starts += deltas[p.id].starts;
-          st.subs += deltas[p.id].subs;
-          st.mins += mins;
-          st.goals += goals;
-          st.assists += assists;
+            const st = state.seasonStats[p.id];
+            st.apps += 1;
+            st.starts += deltas[p.id].starts;
+            st.subs += deltas[p.id].subs;
+            st.mins += mins;
+            st.goals += goals;
+            st.assists += assists;
+          }
 
           report += `• #${p.num} ${p.name}: ${mins}' (${role === 'start' ? 'Start' : 'Sub'})${goals ? ` ⚽x${goals}` : ''}${assists ? ` 🎯x${assists}` : ''}\n`;
         }
@@ -2284,47 +2436,84 @@
         date: dateStr,
         header: `${homeName} ${homeScore} – ${awayScore} ${awayName}`,
         report,
-        deltas
+        deltas: shouldCommitStats ? deltas : null
       });
 
       closeModal("modal-past-match");
-      persist();
+      persist(true);
       renderEverything();
     }
 
     function renderHistoryView() {
       ensureHistoryArray();
       const list = document.getElementById("history-archive-list");
-      if (!state.history || !state.history.length) {
-        list.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:16px; font-weight:700;">No past matches logged yet. Tap "+ Log Past Match" above to add your previous games!</div>`;
+      if (!list) return;
+
+      // Check if seasonStats has data from a match that isn't in history yet
+      const hasSeasonActivity = Object.values(state.seasonStats || {}).some(s => (s.apps || 0) > 0 || (s.mins || 0) > 0);
+
+      if (!state.history.length) {
+        list.innerHTML = `
+          <div style="text-align:center; color:var(--text-muted); padding:14px; font-weight:700;">
+            No past matches in archive list yet.
+            ${hasSeasonActivity ? `
+              <div style="margin-top:12px;">
+                <button class="btn-start-bar" style="width:100%; font-size:0.88rem;" onclick="rebuildMatchFromSeasonStats()">
+                  🔄 Rebuild Today's Match Report from Season Stats
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
         return;
       }
 
-      list.innerHTML = state.history.map(item => `
-        <div class="roster-row" style="flex-direction:column; align-items:stretch; gap:8px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <div style="font-weight:900; font-size:0.95rem;">${item.header}</div>
-              <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">📅 ${item.date}</div>
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button class="btn-avail yes" onclick="openReportById('${item.id}')">📋 Report</button>
-              <button class="btn-icon-sq" onclick="deleteHistoryMatch('${item.id}')">🗑️</button>
-            </div>
-          </div>
-        </div>
-      `).join("");
-    }
+      list.innerHTML = "";
+      state.history.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "roster-row";
+        row.style.flexDirection = "column";
+        row.style.alignItems = "stretch";
+        row.style.gap = "8px";
 
-    function openReportById(id) {
-      ensureHistoryArray();
-      const item = state.history.find(x => x.id === id);
-      if (item) openReportModal(item.report);
+        const topBar = document.createElement("div");
+        topBar.style.display = "flex";
+        topBar.style.justifyContent = "space-between";
+        topBar.style.alignItems = "center";
+        topBar.style.gap = "8px";
+
+        const infoDiv = document.createElement("div");
+        infoDiv.innerHTML = `
+          <div style="font-weight:900; font-size:0.95rem; color:var(--text-main);">${item.header || 'Match Report'}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">📅 ${item.date || ''}</div>
+        `;
+
+        const btnGroup = document.createElement("div");
+        btnGroup.style.display = "flex";
+        btnGroup.style.gap = "6px";
+
+        const repBtn = document.createElement("button");
+        repBtn.className = "btn-avail yes";
+        repBtn.textContent = "📋 Report";
+        repBtn.onclick = () => openReportModal(item.report || item.header);
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-icon-sq";
+        delBtn.textContent = "🗑️";
+        delBtn.onclick = () => deleteHistoryMatch(item.id);
+
+        btnGroup.appendChild(repBtn);
+        btnGroup.appendChild(delBtn);
+        topBar.appendChild(infoDiv);
+        topBar.appendChild(btnGroup);
+        row.appendChild(topBar);
+        list.appendChild(row);
+      });
     }
 
     function openReportModal(text) {
-      activeReportText = text;
-      document.getElementById("report-preview-box").textContent = text;
+      activeReportText = text || "";
+      document.getElementById("report-preview-box").textContent = activeReportText;
       openModal("modal-report");
     }
 
@@ -2344,9 +2533,9 @@
     function deleteHistoryMatch(id) {
       ensureHistoryArray();
       const item = state.history.find(x => x.id === id);
-      if (!item || !confirm(`Delete "${item.header}"? This will also subtract its stats from Season Totals.`)) return;
+      if (!item || !confirm(`Delete "${item.header}" from archive?`)) return;
 
-      if (item.deltas) {
+      if (item.deltas && confirm("Do you also want to subtract this match's minutes & goals from Season Totals?")) {
         Object.keys(item.deltas).forEach(pid => {
           const d = item.deltas[pid];
           const st = state.seasonStats[pid];
@@ -2364,7 +2553,7 @@
       }
 
       state.history = state.history.filter(x => x.id !== id);
-      persist();
+      persist(true);
       renderEverything();
     }
 
