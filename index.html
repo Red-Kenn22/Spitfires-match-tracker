@@ -121,7 +121,7 @@
     .dot-indicator.active { background: #22c55e; }
     .dot-indicator.syncing { background: #f59e0b; }
 
-    /* SCOREBOARD ROW (STRICT HOME LEFT, AWAY RIGHT) */
+    /* SCOREBOARD ROW */
     .scoreboard-row {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -276,7 +276,7 @@
     .btn-start-bar.red { background: var(--red-danger); border-color: #f87171; }
     .btn-start-bar.navy { background: var(--navy-700); border-color: #64748b; }
 
-    /* MAIN CONTENT VIEWS */
+    /* MAIN VIEW CONTAINERS */
     .view-section {
       display: none;
       padding: 12px;
@@ -284,9 +284,7 @@
       width: 100%;
       margin: 0 auto;
     }
-    .view-section.active {
-      display: block;
-    }
+    .view-section.active { display: block; }
 
     /* HIGH CONTRAST DAYLIGHT CARDS */
     .day-card {
@@ -310,7 +308,7 @@
       align-items: center;
     }
 
-    /* PITCH COMPONENT (USED ON MATCH & LINEUP TABS) */
+    /* PITCH BOARD */
     .pitch-wrapper {
       background: var(--card-bg);
       border: 2px solid var(--text-main);
@@ -361,7 +359,7 @@
     .pitch-overlay-badge.left { left: 8px; }
     .pitch-overlay-badge.right { right: 8px; }
 
-    /* SKY BLUE PLAYER TOKENS (#72c2eb) */
+    /* SKY BLUE PLAYER TOKENS */
     .pitch-token {
       position: absolute;
       transform: translate(-50%, -50%);
@@ -444,7 +442,7 @@
       text-align: center;
     }
 
-    /* TOUCHLINE QUICK ACTION GRID */
+    /* ACTION BUTTONS */
     .touchline-actions {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -478,7 +476,7 @@
       min-height: 48px;
     }
 
-    /* BENCH CHIPS & LISTS */
+    /* BENCH & LISTS */
     .info-banner {
       background: #e0f2fe;
       border: 2px solid #0284c7;
@@ -555,7 +553,7 @@
       flex-shrink: 0;
     }
 
-    /* FORM INPUTS & LINEUP CONFIG */
+    /* INPUTS & TOGGLES */
     .form-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -645,7 +643,7 @@
       padding: 0 14px;
     }
 
-    /* SQUAD & SEASON SUB-TABS & TABLES */
+    /* SQUAD & STATS SUBTABS */
     .subtab-bar {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -735,7 +733,7 @@
     }
     .stats-table tr:nth-child(even) { background: #f8fafc; }
 
-    /* TIMELINE ITEMS */
+    /* TIMELINE */
     .timeline-row {
       display: flex;
       justify-content: space-between;
@@ -749,7 +747,7 @@
       font-weight: 700;
     }
 
-    /* FIXED BOTTOM NAVIGATION */
+    /* FIXED BOTTOM BAR */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -800,7 +798,7 @@
       border-radius: 0 0 4px 4px;
     }
 
-    /* MODALS / DRAWERS */
+    /* MODALS */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -887,7 +885,7 @@
 </head>
 <body>
 
-  <!-- PERSISTENT TOP SCOREBOARD & MATCH CLOCK HEADER -->
+  <!-- STICKY HEADER SCOREBOARD -->
   <header class="top-cockpit">
     <div class="app-bar">
       <div class="brand-logo">
@@ -921,7 +919,7 @@
       </div>
     </div>
 
-    <!-- CLOCK & +/- 1M ADJUSTERS -->
+    <!-- CLOCK CONTROLS -->
     <div class="clock-controls-row">
       <div class="clock-left">
         <span class="period-pill" id="period-badge">PRE-MATCH</span>
@@ -936,13 +934,10 @@
       </div>
     </div>
 
-    <!-- PRIMARY PERIOD CONTROL BUTTONS -->
     <div class="primary-clock-bars" id="clock-buttons-container"></div>
   </header>
 
-  <!-- ==========================================
-       TAB 1: LIVE MATCH COCKPIT
-       ========================================== -->
+  <!-- TAB 1: MATCH COCKPIT -->
   <main id="view-match" class="view-section active">
     <div class="pitch-wrapper">
       <div class="pitch-board">
@@ -964,7 +959,6 @@
       </div>
     </div>
 
-    <!-- QUICK EVENT BUTTONS -->
     <div class="touchline-actions">
       <button class="btn-touch goal-us" onclick="openGoalModal()">⚽ Goal: Us</button>
       <button class="btn-touch goal-them" onclick="logOppositionGoal()">🥅 Goal: Them</button>
@@ -973,7 +967,6 @@
       <button class="btn-touch undo-btn" onclick="undoLastAction()">↩️ Undo Last Event</button>
     </div>
 
-    <!-- LIVE BENCH ROTATION -->
     <div class="day-card">
       <div class="day-card-title">
         <span>Bench Rotation (Tap to Sub On)</span>
@@ -982,7 +975,6 @@
       <div class="bench-list" id="match-bench-grid"></div>
     </div>
 
-    <!-- LIVE MATCH TIMELINE -->
     <div class="day-card">
       <div class="day-card-title">
         <span>Live Match Timeline</span>
@@ -991,9 +983,7 @@
     </div>
   </main>
 
-  <!-- ==========================================
-       TAB 2: LINEUP & TACTICAL SETUP
-       ========================================== -->
+  <!-- TAB 2: LINEUP & FORMATION -->
   <section id="view-lineup" class="view-section">
     <div class="day-card">
       <div class="day-card-title">Fixture & Formation</div>
@@ -1045,7 +1035,6 @@
       Tap any two players (pitch or bench) to swap positions.
     </div>
 
-    <!-- INTERACTIVE LINEUP PITCH -->
     <div class="pitch-wrapper">
       <div class="pitch-board">
         <div class="pitch-overlay-badge left" id="lineup-formation-badge">4-3-3</div>
@@ -1065,7 +1054,6 @@
       </div>
     </div>
 
-    <!-- AVAILABLE BENCH FOR SWAPPING -->
     <div class="day-card">
       <div class="day-card-title">
         <span>Available Substitutes (Tap to Swap)</span>
@@ -1074,16 +1062,13 @@
     </div>
   </section>
 
-  <!-- ==========================================
-       TAB 3: SQUAD ROSTER & SEASON STATISTICS
-       ========================================== -->
+  <!-- TAB 3: SQUAD & SEASON STATS -->
   <section id="view-squad" class="view-section">
     <div class="subtab-bar">
       <button class="subtab-btn active" id="btn-sub-roster" onclick="switchSquadSubtab('roster')">👥 Squad Roster</button>
       <button class="subtab-btn" id="btn-sub-stats" onclick="switchSquadSubtab('stats')">📊 Season Stats</button>
     </div>
 
-    <!-- SUB-VIEW A: SQUAD ROSTER MANAGEMENT -->
     <div id="squad-roster-pane">
       <div class="day-card">
         <div class="day-card-title">Add New Player</div>
@@ -1103,7 +1088,6 @@
       </div>
     </div>
 
-    <!-- SUB-VIEW B: CUMULATIVE SEASON STATS -->
     <div id="squad-stats-pane" style="display:none;">
       <div class="day-card">
         <div class="day-card-title">
@@ -1130,9 +1114,7 @@
     </div>
   </section>
 
-  <!-- ==========================================
-       TAB 4: MATCH HISTORY & PAST RESULTS
-       ========================================== -->
+  <!-- TAB 4: HISTORY -->
   <section id="view-history" class="view-section">
     <div class="day-card">
       <div class="day-card-title">
@@ -1143,9 +1125,7 @@
     </div>
   </section>
 
-  <!-- ==========================================
-       FIXED BOTTOM NAVIGATION BAR
-       ========================================== -->
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <button class="nav-tab active" onclick="switchMainTab('view-match', this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
@@ -1165,11 +1145,7 @@
     </button>
   </nav>
 
-  <!-- ==========================================
-       MODALS & DRAWERS
-       ========================================== -->
-
-  <!-- 1. QUICK PITCH PLAYER ACTION MODAL -->
+  <!-- MODALS -->
   <div class="modal-backdrop" id="modal-player-action">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -1187,7 +1163,6 @@
     </div>
   </div>
 
-  <!-- 2. GOAL + ASSIST MODAL -->
   <div class="modal-backdrop" id="modal-goal">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -1206,7 +1181,6 @@
     </div>
   </div>
 
-  <!-- 3. ROLLING SUBSTITUTION MODAL -->
   <div class="modal-backdrop" id="modal-sub">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -1225,7 +1199,6 @@
     </div>
   </div>
 
-  <!-- 4. YELLOW / RED CARD MODAL -->
   <div class="modal-backdrop" id="modal-card">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -1243,7 +1216,6 @@
     </div>
   </div>
 
-  <!-- 5. POST-MATCH REPORT & WHATSAPP SHARE MODAL -->
   <div class="modal-backdrop" id="modal-report">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -1258,7 +1230,6 @@
     </div>
   </div>
 
-  <!-- 6. LOG PAST MATCH RESULT MODAL (BACKFILL PREVIOUS GAMES) -->
   <div class="modal-backdrop" id="modal-past-match">
     <div class="modal-sheet">
       <div class="sheet-header">
@@ -1305,9 +1276,6 @@
     </div>
   </div>
 
-  <!-- ==========================================
-       APPLICATION JAVASCRIPT & FIREBASE ENGINE
-       ========================================== -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAw4i3nSXQwQBsv9jHGKjvCzLdcbgjModg",
@@ -1322,11 +1290,10 @@
 
     const STORAGE_KEY = "matchday_spitfires_v4";
     let rtdb = null;
-    let selectedSwapTarget = null; // { type: 'pitch'|'bench', slotIndex?: number, playerId: string }
+    let selectedSwapTarget = null;
     let activeReportText = "";
     let wakeLockSentinel = null;
 
-    // 17-Player Pre-Loaded Squad (First Names + Sohan)
     const INITIAL_SQUAD = [
       { id: "p1", name: "Aidan", num: 1, available: true },
       { id: "p2", name: "Alayham", num: 2, available: true },
@@ -1347,7 +1314,6 @@
       { id: "p18", name: "Sohan", num: 18, available: true }
     ];
 
-    // Tactical Formation Coordinates & Role Labels
     const FORMATIONS = {
       "4-3-3": [
         { role: "GK", x: 50, y: 89 },
@@ -1398,7 +1364,7 @@
       },
       squad: JSON.parse(JSON.stringify(INITIAL_SQUAD)),
       match: {
-        status: "PRE", // PRE, 1H, HT, 2H, FT
+        status: "PRE",
         running: false,
         elapsedSec: 0,
         lastTickAt: null,
@@ -1408,14 +1374,23 @@
         starterIds: ["p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11"],
         appearedIds: [],
         playerSeconds: {},
-        cards: {}, // playerId -> { yellow: 0, red: 0 }
+        cards: {},
         timeline: []
       },
-      seasonStats: {}, // playerId -> { apps, starts, subs, mins, goals, assists, yellow, red }
+      seasonStats: {},
       history: [],
       undoStack: [],
       updatedAt: Date.now()
     };
+
+    // ENSURE HISTORY ARRAY (Converts Firebase object to array)
+    function ensureHistoryArray() {
+      if (!state.history) {
+        state.history = [];
+      } else if (!Array.isArray(state.history)) {
+        state.history = Object.values(state.history);
+      }
+    }
 
     // BOOTSTRAP
     window.addEventListener("DOMContentLoaded", () => {
@@ -1435,10 +1410,12 @@
         } catch (e) {}
       }
       ensureSeasonStats();
+      ensureHistoryArray();
     }
 
     function persist(pushCloud = true) {
       state.updatedAt = Date.now();
+      ensureHistoryArray();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       if (pushCloud && rtdb) {
         setCloudStatus("syncing");
@@ -1466,6 +1443,7 @@
               const localUndo = state.undoStack || [];
               state = { ...state, ...remote, undoStack: localUndo };
               ensureSeasonStats();
+              ensureHistoryArray();
               localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
               renderEverything();
             }
@@ -1484,6 +1462,7 @@
         if (remote) {
           state = { ...state, ...remote };
           ensureSeasonStats();
+          ensureHistoryArray();
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           renderEverything();
           alert("Cloud Sync Complete: Latest squad, history & stats loaded.");
@@ -1507,7 +1486,6 @@
       }
     }
 
-    // WAKE LOCK
     async function requestScreenWakeLock() {
       if ("wakeLock" in navigator) {
         try {
@@ -1529,7 +1507,6 @@
       }
     }
 
-    // CLOCK ENGINE
     function startSecondLoop() {
       setInterval(() => {
         if (state.match.running) {
@@ -1620,7 +1597,6 @@
       return Math.max(1, Math.ceil(state.match.elapsedSec / 60)) + "'";
     }
 
-    // RENDER TOP SCOREBOARD & PERIOD BUTTONS
     function renderTopScoreboard() {
       const s = state.setup;
       const m = state.match;
@@ -1640,7 +1616,6 @@
       const rightScore = isHome ? m.scoreThem : m.scoreUs;
       document.getElementById("score-display").textContent = `${leftScore} - ${rightScore}`;
 
-      // Period Badge & Clock
       const pBadge = document.getElementById("period-badge");
       pBadge.textContent = m.status === "PRE" ? "PRE-MATCH" : m.status === "1H" ? "1ST HALF" : m.status === "HT" ? "HALF TIME" : m.status === "2H" ? "2ND HALF" : "FULL TIME";
       pBadge.className = "period-pill" + (m.running ? " live" : "");
@@ -1660,7 +1635,6 @@
         document.getElementById("stoppage-text").textContent = "";
       }
 
-      // Period Control Bars
       const btnBox = document.getElementById("clock-buttons-container");
       if (m.status === "PRE") {
         btnBox.innerHTML = `<button class="btn-start-bar" onclick="startFirstHalf()">▶ Start 1st Half (${s.halfDuration}m)</button>`;
@@ -1683,7 +1657,6 @@
 
     function pad(n) { return n < 10 ? "0" + n : n; }
 
-    // RENDER MATCH VIEW (PITCH + BENCH + TIMELINE)
     function renderMatchView() {
       const fName = state.setup.formation;
       document.getElementById("match-formation-badge").textContent = fName;
@@ -1717,7 +1690,6 @@
         tokenContainer.appendChild(el);
       });
 
-      // Render Live Bench
       const benchPlayers = state.squad
         .filter(p => p.available && !state.match.lineupIds.includes(p.id))
         .sort((a, b) => getPlayerMatchMins(a.id) - getPlayerMatchMins(b.id));
@@ -1741,7 +1713,6 @@
         benchGrid.appendChild(card);
       });
 
-      // Render Timeline
       const tList = document.getElementById("match-timeline-list");
       if (!state.match.timeline.length) {
         tList.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:8px;">No match events logged yet.</div>`;
@@ -1755,7 +1726,6 @@
       }
     }
 
-    // RENDER LINEUP VIEW (TAP TO SWAP PITCH & BENCH)
     function renderLineupView() {
       document.getElementById("input-my-team").value = state.setup.myTeam;
       document.getElementById("input-opp-team").value = state.setup.oppTeam;
@@ -1820,7 +1790,6 @@
         return;
       }
 
-      // Execute swap
       if (selectedSwapTarget.type === "pitch" && target.type === "pitch") {
         const i1 = selectedSwapTarget.slotIndex;
         const i2 = target.slotIndex;
@@ -1894,7 +1863,6 @@
       renderEverything();
     }
 
-    // MATCH EVENTS (GOALS, SUBS, CARDS, UNDO)
     function pushUndo() {
       if (!state.undoStack) state.undoStack = [];
       state.undoStack.push(JSON.stringify(state.match));
@@ -2058,7 +2026,6 @@
       renderMatchView();
     }
 
-    // SQUAD ROSTER & CUMULATIVE SEASON STATS
     function ensureSeasonStats() {
       if (!state.seasonStats) state.seasonStats = {};
       state.squad.forEach(p => {
@@ -2103,7 +2070,6 @@
         rList.appendChild(row);
       });
 
-      // Render Season Stats Table
       const tbody = document.getElementById("season-stats-tbody");
       tbody.innerHTML = "";
       const sorted = [...state.squad].sort((a, b) => (state.seasonStats[b.id]?.mins || 0) - (state.seasonStats[a.id]?.mins || 0));
@@ -2169,9 +2135,9 @@
       renderEverything();
     }
 
-    // POST-MATCH SUMMARY, ARCHIVE & MANUAL PAST RESULTS
     function commitMatchToSeasonAndArchive() {
       ensureSeasonStats();
+      ensureHistoryArray();
       const s = state.setup;
       const m = state.match;
       const isHome = s.venue === "home";
@@ -2181,7 +2147,7 @@
       const awayScore = isHome ? m.scoreThem : m.scoreUs;
       const dateStr = new Date().toLocaleDateString("en-GB");
 
-      const deltas = {}; // store per-player contributions so deleting history rolls back cleanly
+      const deltas = {};
 
       state.squad.forEach(p => {
         const mins = getPlayerMatchMins(p.id);
@@ -2234,7 +2200,6 @@
       });
     }
 
-    // MANUAL PAST MATCH MODAL (FOR YOUR FIRST 2 GAMES OF THE SEASON)
     function openManualMatchModal() {
       document.getElementById("past-date").value = new Date().toISOString().split("T")[0];
       document.getElementById("past-opp").value = "";
@@ -2284,6 +2249,7 @@
       const awayScore = isHome ? scoreThem : scoreUs;
 
       ensureSeasonStats();
+      ensureHistoryArray();
       const deltas = {};
       let report = `⚽ *MATCHDAY REPORT*\n🏟️ *${homeName} ${homeScore} – ${awayScore} ${awayName}*\n📅 Date: ${dateStr}\n\n⏱️ *PLAYER BREAKDOWN:*\n`;
 
@@ -2327,8 +2293,9 @@
     }
 
     function renderHistoryView() {
+      ensureHistoryArray();
       const list = document.getElementById("history-archive-list");
-      if (!state.history.length) {
+      if (!state.history || !state.history.length) {
         list.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:16px; font-weight:700;">No past matches logged yet. Tap "+ Log Past Match" above to add your previous games!</div>`;
         return;
       }
@@ -2350,6 +2317,7 @@
     }
 
     function openReportById(id) {
+      ensureHistoryArray();
       const item = state.history.find(x => x.id === id);
       if (item) openReportModal(item.report);
     }
@@ -2374,6 +2342,7 @@
     }
 
     function deleteHistoryMatch(id) {
+      ensureHistoryArray();
       const item = state.history.find(x => x.id === id);
       if (!item || !confirm(`Delete "${item.header}"? This will also subtract its stats from Season Totals.`)) return;
 
@@ -2399,7 +2368,6 @@
       renderEverything();
     }
 
-    // NAVIGATION & MODAL HELPERS
     function switchMainTab(viewId, btn) {
       document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
       document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
