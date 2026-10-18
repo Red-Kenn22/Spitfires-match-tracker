@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0b192c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -51,14 +51,14 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: 80px;
       overflow-x: hidden;
     }
 
     .top-cockpit {
       background-color: var(--navy-900);
       color: #ffffff;
-      padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 12px;
+      padding: 10px 12px 12px;
       border-bottom: 3px solid var(--navy-700);
       position: sticky;
       top: 0;
@@ -139,7 +139,7 @@
     .score-team-col.away { align-items: flex-end; text-align: right; }
 
     .venue-pill {
-      font-size: 0.72rem;
+      font-size: 0.65rem;
       font-weight: 900;
       padding: 2px 7px;
       border-radius: 4px;
@@ -318,7 +318,7 @@
     .pitch-board {
       position: relative;
       width: 100%;
-      aspect-ratio: 3 / 4;
+      height: 430px;
       background: repeating-linear-gradient(
         0deg,
         var(--pitch-dark) 0px,
@@ -367,20 +367,6 @@
       width: 68px;
       transition: transform 0.12s ease;
     }
-    .pitch-token.draggable-token {
-      touch-action: none;
-      cursor: grab;
-    }
-    .pitch-token.dragging {
-      z-index: 50;
-      transition: none;
-      cursor: grabbing;
-    }
-    .pitch-token.dragging .token-disc {
-      outline: 4px solid #38bdf8;
-      transform: scale(1.16);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.65);
-    }
     .pitch-token.selected .token-disc {
       outline: 4px solid #facc15;
       transform: scale(1.12);
@@ -408,7 +394,7 @@
       right: -12px;
       background: var(--navy-950);
       color: #ffffff;
-      font-size: 0.72rem;
+      font-size: 0.6rem;
       font-weight: 900;
       padding: 1px 5px;
       border-radius: 5px;
@@ -422,7 +408,7 @@
       left: -10px;
       background: #fef08a;
       color: #0f172a;
-      font-size: 0.72rem;
+      font-size: 0.62rem;
       font-weight: 900;
       padding: 1px 4px;
       border-radius: 4px;
@@ -621,7 +607,7 @@
 
     .lineup-btn-row {
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: 1fr auto;
       gap: 8px;
       margin-top: 6px;
     }
@@ -632,10 +618,10 @@
       border: 2px solid var(--text-main);
       border-radius: 10px;
       font-weight: 900;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       color: var(--navy-950);
       cursor: pointer;
-      padding: 0 12px;
+      padding: 0 14px;
     }
 
     .btn-outline {
@@ -644,10 +630,10 @@
       border: 2px solid var(--text-main);
       border-radius: 10px;
       font-weight: 800;
-      font-size: 0.82rem;
+      font-size: 0.88rem;
       color: var(--text-main);
       cursor: pointer;
-      padding: 0 10px;
+      padding: 0 14px;
     }
 
     .subtab-bar {
@@ -751,17 +737,18 @@
       font-weight: 700;
     }
 
+    /* FIXED BOTTOM NAVIGATION BAR */
     .bottom-nav {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: calc(66px + env(safe-area-inset-bottom, 0px));
+      height: 66px;
       background: var(--navy-900);
       border-top: 2px solid var(--navy-700);
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      z-index: 1000;
+      z-index: 9999;
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
@@ -778,6 +765,7 @@
       font-weight: 800;
       cursor: pointer;
       position: relative;
+      touch-action: manipulation;
     }
     .nav-tab svg {
       width: 22px;
@@ -785,6 +773,10 @@
       stroke: currentColor;
       fill: none;
       stroke-width: 2.2;
+      pointer-events: none;
+    }
+    .nav-tab span {
+      pointer-events: none;
     }
     .nav-tab.active {
       color: var(--sky-token);
@@ -801,11 +793,12 @@
       border-radius: 0 0 4px 4px;
     }
 
+    /* MODALS */
     .modal-backdrop {
       position: fixed;
       inset: 0;
       background: rgba(6, 16, 30, 0.75);
-      z-index: 2000;
+      z-index: 10000;
       display: none;
       align-items: flex-end;
       justify-content: center;
@@ -883,9 +876,6 @@
       font-weight: 800;
       font-size: 0.85rem;
     }
-    input, textarea, select { user-select: text; -webkit-user-select: text; }
-    #clock-text.in-stoppage { color: #fbbf24; }
-    .pitch-token.sent-off { opacity: 0.45; filter: grayscale(1); cursor: default; }
   </style>
 </head>
 <body>
@@ -937,7 +927,9 @@
       </div>
     </div>
 
-    <div class="primary-clock-bars" id="clock-buttons-container"></div>
+    <div class="primary-clock-bars" id="clock-buttons-container">
+      <button class="btn-start-bar" onclick="startFirstHalf()">▶ Start 1st Half (40m)</button>
+    </div>
   </header>
 
   <!-- TAB 1: MATCH COCKPIT -->
@@ -1030,19 +1022,18 @@
 
       <div class="lineup-btn-row">
         <button class="btn-sky" onclick="autoFillStartingXI()">⚡ Auto-Fill XI</button>
-        <button class="btn-outline" onclick="resetFormationCoords()" title="Snap players back to default formation positions">📐 Reset Shape</button>
         <button class="btn-outline" onclick="resetMatchSheet()">🔄 Reset Match</button>
       </div>
     </div>
 
     <div class="info-banner" id="swap-helper-banner">
-      Drag any player on the pitch to adjust shape, or tap any two players to swap.
+      Tap any two players (pitch or bench) to swap positions.
     </div>
 
     <div class="pitch-wrapper">
-      <div class="pitch-board" id="lineup-pitch-board">
+      <div class="pitch-board">
         <div class="pitch-overlay-badge left" id="lineup-formation-badge">4-3-3</div>
-        <div class="pitch-overlay-badge right">Drag or Tap XI</div>
+        <div class="pitch-overlay-badge right">Starting XI</div>
 
         <svg class="pitch-svg" viewBox="0 0 100 140" preserveAspectRatio="none">
           <rect x="3" y="3" width="94" height="134" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
@@ -1126,7 +1117,6 @@
         <button class="btn-sky" style="min-height:40px; padding:0 12px; font-size:0.8rem;" onclick="openManualMatchModal()">+ Log Past Match</button>
       </div>
 
-      <!-- Hardwired Recovery Bar so it is ALWAYS visible if a match is missing from History -->
       <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1.5px dashed #cbd5e1;">
         <button class="btn-start-bar" style="width:100%; font-size:0.85rem; min-height:44px;" onclick="rebuildMatchFromSeasonStats()">
           🔄 Rebuild Today's Match Report from Season Stats
@@ -1141,21 +1131,21 @@
     </div>
   </section>
 
-  <!-- BOTTOM NAVIGATION -->
-  <nav class="bottom-nav">
-    <button class="nav-tab active" onclick="switchMainTab('view-match', this)">
+  <!-- FIXED BOTTOM NAVIGATION BAR (WITH DATA-TARGET ATTRIBUTES) -->
+  <nav class="bottom-nav" id="main-bottom-nav">
+    <button type="button" class="nav-tab active" data-target="view-match" onclick="window.switchMainTab('view-match', this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
       <span>Match</span>
     </button>
-    <button class="nav-tab" onclick="switchMainTab('view-lineup', this)">
+    <button type="button" class="nav-tab" data-target="view-lineup" onclick="window.switchMainTab('view-lineup', this)">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="3"/></svg>
       <span>Lineup</span>
     </button>
-    <button class="nav-tab" onclick="switchMainTab('view-squad', this)">
+    <button type="button" class="nav-tab" data-target="view-squad" onclick="window.switchMainTab('view-squad', this)">
       <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span>Squad & Season</span>
     </button>
-    <button class="nav-tab" onclick="switchMainTab('view-history', this)">
+    <button type="button" class="nav-tab" data-target="view-history" onclick="window.switchMainTab('view-history', this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span>History</span>
     </button>
@@ -1299,6 +1289,40 @@
     </div>
   </div>
 
+  <!-- STANDALONE NAVIGATION SCRIPT (ALWAYS RUNS EVEN IF truncated LATER) -->
+  <script>
+    window.switchMainTab = function(viewId, btn) {
+      document.querySelectorAll(".view-section").forEach(function(s) {
+        s.classList.remove("active");
+      });
+      document.querySelectorAll(".nav-tab").forEach(function(b) {
+        b.classList.remove("active");
+      });
+      var targetEl = document.getElementById(viewId);
+      if (targetEl) targetEl.classList.add("active");
+      if (btn) {
+        btn.classList.add("active");
+      } else {
+        var matchingBtn = document.querySelector('.nav-tab[data-target="' + viewId + '"]');
+        if (matchingBtn) matchingBtn.classList.add("active");
+      }
+      if (typeof window.renderEverything === "function") {
+        window.renderEverything();
+      }
+    };
+
+    window.openModal = function(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add("open");
+    };
+
+    window.closeModal = function(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.remove("open");
+    };
+  </script>
+
+  <!-- MAIN APPLICATION & FIREBASE ENGINE -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAw4i3nSXQwQBsv9jHGKjvCzLdcbgjModg",
@@ -1317,54 +1341,6 @@
     let selectedSwapTarget = null;
     let activeReportText = "";
     let wakeLockSentinel = null;
-    let audioCtx = null;
-
-    function scrub(v) {
-      if (typeof v === "string") return v.replace(/[<>"]/g, "");
-      if (Array.isArray(v)) return v.map(scrub);
-      if (v && typeof v === "object") {
-        for (const k in v) { if (k === "undoStack") continue; v[k] = scrub(v[k]); }
-      }
-      return v;
-    }
-    function primeAudio() {
-      try {
-        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === "suspended") audioCtx.resume();
-      } catch (e) {}
-    }
-    function alertEndOfRegTime() {
-      try { if (navigator.vibrate) navigator.vibrate([400, 150, 400, 150, 400]); } catch (e) {}
-      try {
-        if (!audioCtx) return;
-        [0, 0.35, 0.7].forEach(t => {
-          const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-          o.frequency.value = 880; g.gain.value = 0.25;
-          o.connect(g); g.connect(audioCtx.destination);
-          o.start(audioCtx.currentTime + t); o.stop(audioCtx.currentTime + t + 0.2);
-        });
-      } catch (e) {}
-    }
-    const activeOnPitchIds = () => state.match.lineupIds.filter(id => !(state.match.sentOffIds || []).includes(id));
-    function benchLabel(n) {
-      const avail = state.squad.filter(p => p.available).length;
-      const el = state.match.elapsedSec || 0;
-      const share = avail ? Math.round((el / 60) * 11 / avail) : 0;
-      return `${n} Available` + (el >= 300 ? ` · fair share ≈ ${share}m` : "");
-    }
-    function updateLiveMinutes() {
-      document.querySelectorAll(".pitch-token[data-pid] .token-min-pill").forEach(el => {
-        el.textContent = getPlayerMatchMins(el.closest(".pitch-token").dataset.pid) + "'";
-      });
-      document.querySelectorAll(".bench-card[data-pid] .mins-tag").forEach(el => {
-        el.textContent = getPlayerMatchMins(el.closest(".bench-card").dataset.pid) + "m";
-      });
-      const c = document.getElementById("match-bench-count");
-      if (c) c.textContent = benchLabel(document.querySelectorAll(".bench-card[data-pid]").length);
-    }
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && wakeLockSentinel && wakeLockSentinel.released) requestScreenWakeLock();
-    });
 
     const INITIAL_SQUAD = [
       { id: "p1", name: "Aidan", num: 1, available: true },
@@ -1426,66 +1402,13 @@
       ]
     };
 
-    // Dynamic role inference based on pitch coordinates (x: 0-100, y: 0-100)
-    function inferRoleFromCoords(x, y, slotIndex) {
-      if (slotIndex === 0 || y > 83) return "GK";
-      if (y > 64) {
-        if (x < 26) return "LB";
-        if (x > 74) return "RB";
-        if (x < 43) return "LCB";
-        if (x > 57) return "RCB";
-        return "CB";
-      }
-      if (y > 53) {
-        if (x < 25) return "LWB";
-        if (x > 75) return "RWB";
-        if (x < 43) return "LDM";
-        if (x > 57) return "RDM";
-        return "DM";
-      }
-      if (y > 39) {
-        if (x < 25) return "LM";
-        if (x > 75) return "RM";
-        if (x < 43) return "LCM";
-        if (x > 57) return "RCM";
-        return "CM";
-      }
-      if (y > 26) {
-        if (x < 28) return "LW";
-        if (x > 72) return "RW";
-        if (x < 43) return "LAM";
-        if (x > 57) return "RAM";
-        return "CAM";
-      }
-      if (x < 30) return "LW";
-      if (x > 70) return "RW";
-      if (x < 44) return "LS";
-      if (x > 56) return "RS";
-      return "ST";
-    }
-
-    function getActiveFormationCoords() {
-      const fName = (state.setup && state.setup.formation) || "4-3-3";
-      const base = FORMATIONS[fName] || FORMATIONS["4-3-3"];
-      const custom = state.setup && toArray(state.setup.customCoords);
-      if (custom && custom.length === 11) {
-        return custom.map((c, idx) => ({
-          role: c.role || base[idx]?.role || "XI",
-          x: typeof c.x === "number" ? c.x : (base[idx]?.x || 50),
-          y: typeof c.y === "number" ? c.y : (base[idx]?.y || 50)
-        }));
-      }
-      return base.map(b => ({ ...b }));
-    }
-
     let state = {
       setup: {
         myTeam: "Woodley Utd Spitfires",
         oppTeam: "Maidenhead Utd Galaxy",
         venue: "away",
         halfDuration: 40,
-        formation: "4-3-3",
-        customCoords: null
+        formation: "4-3-3"
       },
       squad: JSON.parse(JSON.stringify(INITIAL_SQUAD)),
       match: {
@@ -1530,14 +1453,18 @@
       };
     }
 
+    function ensureSeasonStats() {
+      if (!state.seasonStats || typeof state.seasonStats !== "object") state.seasonStats = {};
+      toArray(state.squad).forEach(p => {
+        if (!state.seasonStats[p.id]) {
+          state.seasonStats[p.id] = { apps: 0, starts: 0, subs: 0, mins: 0, goals: 0, assists: 0, yellow: 0, red: 0 };
+        }
+      });
+    }
+
     function sanitizeFullState() {
-      scrub(state);
       if (!state.setup) {
-        state.setup = { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3", customCoords: null };
-      }
-      if (state.setup.customCoords) {
-        const arr = toArray(state.setup.customCoords);
-        state.setup.customCoords = arr.length === 11 ? arr : null;
+        state.setup = { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3" };
       }
       state.squad = toArray(state.squad);
       if (!state.squad.length) state.squad = JSON.parse(JSON.stringify(INITIAL_SQUAD));
@@ -1547,7 +1474,6 @@
       if (!state.match.lineupIds.length) state.match.lineupIds = state.squad.slice(0, 11).map(p => p.id);
       state.match.starterIds = toArray(state.match.starterIds);
       state.match.appearedIds = toArray(state.match.appearedIds);
-      state.match.sentOffIds = toArray(state.match.sentOffIds);
       state.match.timeline = toArray(state.match.timeline);
       if (!state.match.playerSeconds || typeof state.match.playerSeconds !== "object") state.match.playerSeconds = {};
       if (!state.match.cards || typeof state.match.cards !== "object") state.match.cards = {};
@@ -1563,3 +1489,1110 @@
       LEGACY_KEYS.forEach(k => {
         try {
           const raw = localStorage.getItem(k);
+          if (!raw) return;
+          const parsed = JSON.parse(raw);
+          const oldHist = toArray(parsed.history || parsed.matchHistory);
+          oldHist.forEach((h, i) => {
+            const norm = normalizeHistoryItem(h, i);
+            if (norm && !existingHeaders.has(norm.header + "_" + norm.date)) {
+              state.history.push(norm);
+              existingHeaders.add(norm.header + "_" + norm.date);
+            }
+          });
+        } catch (e) {}
+      });
+    }
+
+    function loadLocal() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          state = { ...state, ...parsed };
+        } catch (e) {}
+      }
+      sanitizeFullState();
+    }
+
+    function persist(pushCloud = true) {
+      state.updatedAt = Date.now();
+      sanitizeFullState();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (pushCloud && rtdb) {
+        setCloudStatus("syncing");
+        const cleanCopy = JSON.parse(JSON.stringify(state));
+        delete cleanCopy.undoStack;
+        rtdb.ref("spitfires_state_v4").set(cleanCopy)
+          .then(() => setCloudStatus("online"))
+          .catch(() => setCloudStatus("offline"));
+      }
+    }
+
+    function initFirebaseSync() {
+      try {
+        if (typeof firebase !== "undefined") {
+          firebase.initializeApp(firebaseConfig);
+          rtdb = firebase.database();
+
+          rtdb.ref(".info/connected").on("value", (snap) => {
+            setCloudStatus(snap.val() === true ? "online" : "offline");
+          });
+
+          rtdb.ref("matchday_data").once("value", (snap) => {
+            const oldRemote = snap.val();
+            if (oldRemote && oldRemote.history) {
+              const list = toArray(oldRemote.history);
+              sanitizeFullState();
+              const existing = new Set(state.history.map(h => h.header));
+              let added = false;
+              list.forEach((item, idx) => {
+                const norm = normalizeHistoryItem(item, idx);
+                if (norm && !existing.has(norm.header)) {
+                  state.history.push(norm);
+                  added = true;
+                }
+              });
+              if (added) {
+                persist(true);
+                renderHistoryView();
+              }
+            }
+          });
+
+          rtdb.ref("spitfires_state_v4").on("value", (snap) => {
+            const remote = snap.val();
+            if (remote && remote.updatedAt && remote.updatedAt > (state.updatedAt || 0)) {
+              const localUndo = state.undoStack || [];
+              const localHist = [...(state.history || [])];
+              state = { ...state, ...remote, undoStack: localUndo };
+              sanitizeFullState();
+              if (state.history.length === 0 && localHist.length > 0) {
+                state.history = localHist;
+              }
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+              window.renderEverything();
+            }
+          });
+        }
+      } catch (e) {
+        setCloudStatus("offline");
+      }
+    }
+
+    function forceCloudPull() {
+      if (!rtdb) return;
+      setCloudStatus("syncing");
+      rtdb.ref("spitfires_state_v4").once("value", (snap) => {
+        const remote = snap.val();
+        if (remote) {
+          const backupHist = [...(state.history || [])];
+          state = { ...state, ...remote };
+          sanitizeFullState();
+          if (state.history.length === 0 && backupHist.length > 0) {
+            state.history = backupHist;
+          }
+          recoverLegacyLocalHistory();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          window.renderEverything();
+          alert("Cloud Sync Complete!");
+        }
+        setCloudStatus("online");
+      });
+    }
+
+    function setCloudStatus(mode) {
+      const dot = document.getElementById("cloud-dot");
+      const txt = document.getElementById("cloud-text");
+      if (mode === "online") {
+        dot.className = "dot-indicator active";
+        txt.textContent = "Cloud Synced";
+      } else if (mode === "syncing") {
+        dot.className = "dot-indicator syncing";
+        txt.textContent = "Syncing...";
+      } else {
+        dot.className = "dot-indicator";
+        txt.textContent = "Offline Ready";
+      }
+    }
+
+    async function requestScreenWakeLock() {
+      if ("wakeLock" in navigator) {
+        try {
+          wakeLockSentinel = await navigator.wakeLock.request("screen");
+          document.getElementById("wake-dot").className = "dot-indicator active";
+          document.getElementById("wake-text").textContent = "Screen Lock: Auto";
+        } catch (err) {}
+      }
+    }
+
+    async function toggleWakeLock() {
+      if (wakeLockSentinel) {
+        await wakeLockSentinel.release();
+        wakeLockSentinel = null;
+        document.getElementById("wake-dot").className = "dot-indicator";
+        document.getElementById("wake-text").textContent = "Screen Lock: Off";
+      } else {
+        requestScreenWakeLock();
+      }
+    }
+
+    function startSecondLoop() {
+      setInterval(() => {
+        if (state.match.running) {
+          const now = Date.now();
+          const delta = Math.max(0, Math.round((now - (state.match.lastTickAt || now)) / 1000));
+          if (delta >= 1) {
+            state.match.elapsedSec += delta;
+            state.match.lastTickAt = now;
+            state.match.lineupIds.forEach(pid => {
+              state.match.playerSeconds[pid] = (state.match.playerSeconds[pid] || 0) + delta;
+              if (!state.match.appearedIds.includes(pid)) state.match.appearedIds.push(pid);
+            });
+            renderTopScoreboard();
+            renderMatchView();
+          }
+        }
+      }, 1000);
+    }
+
+    function startFirstHalf() {
+      pushUndo();
+      state.match.status = "1H";
+      state.match.running = true;
+      state.match.lastTickAt = Date.now();
+      state.match.starterIds = [...state.match.lineupIds];
+      state.match.lineupIds.forEach(pid => {
+        if (!state.match.appearedIds.includes(pid)) state.match.appearedIds.push(pid);
+      });
+      state.match.timeline.unshift({ min: "1'", text: "⏱️ Kickoff — 1st Half Started", type: "period" });
+      persist();
+      window.renderEverything();
+    }
+
+    function pauseResumeMatch() {
+      state.match.running = !state.match.running;
+      state.match.lastTickAt = Date.now();
+      persist();
+      renderTopScoreboard();
+    }
+
+    function triggerHalfTime() {
+      pushUndo();
+      state.match.running = false;
+      state.match.status = "HT";
+      state.match.elapsedSec = state.setup.halfDuration * 60;
+      state.match.timeline.unshift({ min: `${state.setup.halfDuration}'`, text: "⏸️ Half Time Whistle", type: "period" });
+      persist();
+      window.renderEverything();
+    }
+
+    function startSecondHalf() {
+      pushUndo();
+      state.match.status = "2H";
+      state.match.running = true;
+      state.match.lastTickAt = Date.now();
+      state.match.lineupIds.forEach(pid => {
+        if (!state.match.appearedIds.includes(pid)) state.match.appearedIds.push(pid);
+      });
+      state.match.timeline.unshift({ min: `${state.setup.halfDuration + 1}'`, text: "▶️ Kickoff — 2nd Half Started", type: "period" });
+      persist();
+      window.renderEverything();
+    }
+
+    function triggerFullTime() {
+      if (!confirm("Confirm Full Time? This will commit player minutes and stats to Season Totals and generate your Match Report.")) return;
+      state.match.running = false;
+      state.match.status = "FT";
+      const ftMin = Math.ceil(state.match.elapsedSec / 60) || (state.setup.halfDuration * 2);
+      state.match.timeline.unshift({ min: `${ftMin}'`, text: "🏁 Full Time Whistle", type: "period" });
+
+      commitMatchToSeasonAndArchive();
+      persist();
+      window.renderEverything();
+      if (state.history && state.history[0]) {
+        openReportModal(state.history[0].report);
+      }
+    }
+
+    function adjustClock(secDelta) {
+      state.match.elapsedSec = Math.max(0, state.match.elapsedSec + secDelta);
+      persist();
+      renderTopScoreboard();
+    }
+
+    function getPlayerMatchMins(pid) {
+      return Math.round(((state.match.playerSeconds && state.match.playerSeconds[pid]) || 0) / 60);
+    }
+
+    function getCurrentMinuteStr() {
+      return Math.max(1, Math.ceil((state.match.elapsedSec || 0) / 60)) + "'";
+    }
+
+    function pad(n) { return n < 10 ? "0" + n : n; }
+
+    function renderTopScoreboard() {
+      const s = state.setup;
+      const m = state.match;
+      const isHome = s.venue === "home";
+
+      document.getElementById("team-left").textContent = isHome ? s.myTeam : s.oppTeam;
+      document.getElementById("team-right").textContent = isHome ? s.oppTeam : s.myTeam;
+
+      const bLeft = document.getElementById("badge-left");
+      const bRight = document.getElementById("badge-right");
+      bLeft.textContent = isHome ? "HOME (US)" : "HOME";
+      bLeft.className = "venue-pill " + (isHome ? "us" : "them");
+      bRight.textContent = !isHome ? "AWAY (US)" : "AWAY";
+      bRight.className = "venue-pill " + (!isHome ? "us" : "them");
+
+      const leftScore = isHome ? m.scoreUs : m.scoreThem;
+      const rightScore = isHome ? m.scoreThem : m.scoreUs;
+      document.getElementById("score-display").textContent = `${leftScore} -${rightScore}`;
+
+      const pBadge = document.getElementById("period-badge");
+      pBadge.textContent = m.status === "PRE" ? "PRE-MATCH" : m.status === "1H" ? "1ST HALF" : m.status === "HT" ? "HALF TIME" : m.status === "2H" ? "2ND HALF" : "FULL TIME";
+      pBadge.className = "period-pill" + (m.running ? " live" : "");
+
+      const halfSec = s.halfDuration * 60;
+      const regLimit = m.status === "1H" ? halfSec : m.status === "2H" ? halfSec * 2 : 0;
+
+      if ((m.status === "1H" || m.status === "2H") && m.elapsedSec > regLimit) {
+        const stopMins = Math.ceil((m.elapsedSec - regLimit) / 60);
+        const baseMins = regLimit / 60;
+        document.getElementById("clock-text").textContent = `${pad(baseMins)}:00`;
+        document.getElementById("stoppage-text").textContent = `+${stopMins}'`;
+      } else {
+        const mins = Math.floor((m.elapsedSec || 0) / 60);
+        const secs = (m.elapsedSec || 0) % 60;
+        document.getElementById("clock-text").textContent = `${pad(mins)}:${pad(secs)}`;
+        document.getElementById("stoppage-text").textContent = "";
+      }
+
+      const btnBox = document.getElementById("clock-buttons-container");
+      if (m.status === "PRE") {
+        btnBox.innerHTML = `<button class="btn-start-bar" onclick="startFirstHalf()">▶ Start 1st Half (${s.halfDuration}m)</button>`;
+      } else if (m.status === "1H") {
+        btnBox.innerHTML = `
+          <button class="btn-start-bar ${m.running ? 'amber' : ''}" onclick="pauseResumeMatch()">${m.running ? '⏸ Pause' : '▶ Resume'}</button>
+          <button class="btn-start-bar navy" onclick="triggerHalfTime()">⏱ Half Time</button>
+        `;
+      } else if (m.status === "HT") {
+        btnBox.innerHTML = `<button class="btn-start-bar" onclick="startSecondHalf()">▶ Start 2nd Half (${s.halfDuration}m)</button>`;
+      } else if (m.status === "2H") {
+        btnBox.innerHTML = `
+          <button class="btn-start-bar ${m.running ? 'amber' : ''}" onclick="pauseResumeMatch()">${m.running ? '⏸ Pause' : '▶ Resume'}</button>
+          <button class="btn-start-bar red" onclick="triggerFullTime()">🏁 Full Time</button>
+        `;
+      } else {
+        btnBox.innerHTML = `<button class="btn-start-bar navy" onclick="resetMatchSheet()">🔄 Start New Match Sheet</button>`;
+      }
+    }
+
+    function renderMatchView() {
+      sanitizeFullState();
+      const fName = state.setup.formation || "4-3-3";
+      document.getElementById("match-formation-badge").textContent = fName;
+      const coords = FORMATIONS[fName] || FORMATIONS["4-3-3"];
+
+      const tokenContainer = document.getElementById("match-pitch-tokens");
+      tokenContainer.innerHTML = "";
+
+      state.match.lineupIds.forEach((pid, idx) => {
+        const player = state.squad.find(p => p.id === pid) || { id: pid, name: "Empty", num: "-" };
+        const slot = coords[idx] || { role: "SUB", x: 50, y: 50 };
+        const mins = getPlayerMatchMins(pid);
+        const cInfo = (state.match.cards && state.match.cards[pid]) || { yellow: 0, red: 0 };
+        const cardBadge = cInfo.red > 0 ? "🟥" : cInfo.yellow > 0 ? "🟨" : "";
+
+        const el = document.createElement("div");
+        el.className = "pitch-token";
+        el.style.left = slot.x + "%";
+        el.style.top = slot.y + "%";
+        el.onclick = () => openQuickPlayerAction(player.id);
+
+        el.innerHTML = `
+          <div class="token-disc">
+            ${player.num}
+            <span class="token-role-pill">${slot.role}</span>
+            <span class="token-min-pill">${mins}'</span>${cardBadge ? `<span class="token-card-flag">${cardBadge}</span>` : ""}
+          </div>
+          <div class="token-label">${player.name}</div>
+        `;
+        tokenContainer.appendChild(el);
+      });
+
+      const benchPlayers = state.squad
+        .filter(p => p.available && !state.match.lineupIds.includes(p.id))
+        .sort((a, b) => getPlayerMatchMins(a.id) - getPlayerMatchMins(b.id));
+
+      document.getElementById("match-bench-count").textContent = `${benchPlayers.length} Available`;
+      const benchGrid = document.getElementById("match-bench-grid");
+      benchGrid.innerHTML = "";
+
+      benchPlayers.forEach(p => {
+        const mins = getPlayerMatchMins(p.id);
+        const card = document.createElement("div");
+        card.className = "bench-card";
+        card.onclick = () => openSubModal(null, p.id);
+        card.innerHTML = `
+          <div class="bench-left">
+            <div class="num-circle">${p.num}</div>
+            <div class="bench-name">${p.name}</div>
+          </div>
+          <span class="mins-tag">${mins}m</span>
+        `;
+        benchGrid.appendChild(card);
+      });
+
+      const tList = document.getElementById("match-timeline-list");
+      if (!state.match.timeline.length) {
+        tList.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:8px;">No match events logged yet.</div>`;
+      } else {
+        tList.innerHTML = state.match.timeline.map(item => `
+          <div class="timeline-row">
+            <span>${item.text || ''}</span>
+            <span style="color:var(--navy-900); font-weight:900;">${item.min || ''}</span>
+          </div>
+        `).join("");
+      }
+    }
+
+    function renderLineupView() {
+      sanitizeFullState();
+      document.getElementById("input-my-team").value = state.setup.myTeam;
+      document.getElementById("input-opp-team").value = state.setup.oppTeam;
+      document.getElementById("input-half-mins").value = state.setup.halfDuration;
+      document.getElementById("select-formation").value = state.setup.formation;
+      document.getElementById("seg-home").classList.toggle("active", state.setup.venue === "home");
+      document.getElementById("seg-away").classList.toggle("active", state.setup.venue === "away");
+      document.getElementById("lineup-formation-badge").textContent = state.setup.formation;
+
+      const coords = FORMATIONS[state.setup.formation] || FORMATIONS["4-3-3"];
+      const container = document.getElementById("lineup-pitch-tokens");
+      container.innerHTML = "";
+
+      state.match.lineupIds.forEach((pid, idx) => {
+        const player = state.squad.find(p => p.id === pid) || { id: pid, name: "Empty", num: "-" };
+        const slot = coords[idx] || { role: "XI", x: 50, y: 50 };
+        const isSelected = selectedSwapTarget && selectedSwapTarget.type === "pitch" && selectedSwapTarget.slotIndex === idx;
+
+        const el = document.createElement("div");
+        el.className = "pitch-token" + (isSelected ? " selected" : "");
+        el.style.left = slot.x + "%";
+        el.style.top = slot.y + "%";
+        el.onclick = () => handleLineupSwapTap({ type: "pitch", slotIndex: idx, playerId: pid });
+
+        el.innerHTML = `
+          <div class="token-disc">
+            ${player.num}
+            <span class="token-role-pill">${slot.role}</span>
+          </div>
+          <div class="token-label">${player.name}</div>
+        `;
+        container.appendChild(el);
+      });
+
+      const benchPlayers = state.squad.filter(p => p.available && !state.match.lineupIds.includes(p.id));
+      const benchGrid = document.getElementById("lineup-bench-grid");
+      benchGrid.innerHTML = "";
+
+      benchPlayers.forEach(p => {
+        const isSelected = selectedSwapTarget && selectedSwapTarget.type === "bench" && selectedSwapTarget.playerId === p.id;
+        const card = document.createElement("div");
+        card.className = "bench-card" + (isSelected ? " selected" : "");
+        card.onclick = () => handleLineupSwapTap({ type: "bench", playerId: p.id });
+        card.innerHTML = `
+          <div class="bench-left">
+            <div class="num-circle">${p.num}</div>
+            <div class="bench-name">${p.name}</div>
+          </div>
+          <span class="mins-tag">SUB</span>
+        `;
+        benchGrid.appendChild(card);
+      });
+    }
+
+    function handleLineupSwapTap(target) {
+      const banner = document.getElementById("swap-helper-banner");
+      if (!selectedSwapTarget) {
+        selectedSwapTarget = target;
+        const p = state.squad.find(x => x.id === target.playerId);
+        banner.textContent = `Selected ${p ? p.name : 'Player'} — Now tap another player to swap!`;
+        renderLineupView();
+        return;
+      }
+
+      if (selectedSwapTarget.type === "pitch" && target.type === "pitch") {
+        const i1 = selectedSwapTarget.slotIndex;
+        const i2 = target.slotIndex;
+        const temp = state.match.lineupIds[i1];
+        state.match.lineupIds[i1] = state.match.lineupIds[i2];
+        state.match.lineupIds[i2] = temp;
+      } else if (selectedSwapTarget.type === "pitch" && target.type === "bench") {
+        state.match.lineupIds[selectedSwapTarget.slotIndex] = target.playerId;
+      } else if (selectedSwapTarget.type === "bench" && target.type === "pitch") {
+        state.match.lineupIds[target.slotIndex] = selectedSwapTarget.playerId;
+      }
+
+      selectedSwapTarget = null;
+      banner.textContent = "Tap any two players (pitch or bench) to swap positions.";
+      persist();
+      renderLineupView();
+      renderMatchView();
+    }
+
+    function saveSetupConfig() {
+      state.setup.myTeam = document.getElementById("input-my-team").value.trim() || "Woodley Utd Spitfires";
+      state.setup.oppTeam = document.getElementById("input-opp-team").value.trim() || "Opposition";
+      state.setup.halfDuration = parseInt(document.getElementById("input-half-mins").value) || 40;
+      persist();
+      renderTopScoreboard();
+    }
+
+    function setVenue(v) {
+      state.setup.venue = v;
+      persist();
+      renderLineupView();
+      renderTopScoreboard();
+    }
+
+    function changeFormation(val) {
+      state.setup.formation = val;
+      persist();
+      renderLineupView();
+      renderMatchView();
+    }
+
+    function autoFillStartingXI() {
+      const avail = state.squad.filter(p => p.available).slice(0, 11).map(p => p.id);
+      if (avail.length < 11) {
+        alert(`Only ${avail.length} available players marked in Squad Roster.`);
+      }
+      state.match.lineupIds = avail;
+      persist();
+      renderLineupView();
+      renderMatchView();
+    }
+
+    function resetMatchSheet() {
+      if (!confirm("Reset current live match clock, score, and events back to 0-0 Pre-Match?")) return;
+      state.match = {
+        status: "PRE",
+        running: false,
+        elapsedSec: 0,
+        lastTickAt: null,
+        scoreUs: 0,
+        scoreThem: 0,
+        lineupIds: state.squad.filter(p => p.available).slice(0, 11).map(p => p.id),
+        starterIds: [],
+        appearedIds: [],
+        playerSeconds: {},
+        cards: {},
+        timeline: []
+      };
+      state.undoStack = [];
+      persist();
+      window.renderEverything();
+    }
+
+    function pushUndo() {
+      if (!state.undoStack) state.undoStack = [];
+      state.undoStack.push(JSON.stringify(state.match));
+      if (state.undoStack.length > 20) state.undoStack.shift();
+    }
+
+    function undoLastAction() {
+      if (!state.undoStack || !state.undoStack.length) {
+        alert("No recent match event to undo.");
+        return;
+      }
+      state.match = JSON.parse(state.undoStack.pop());
+      persist();
+      window.renderEverything();
+    }
+
+    function openQuickPlayerAction(playerId) {
+      const p = state.squad.find(x => x.id === playerId);
+      if (!p) return;
+      document.getElementById("pa-modal-title").textContent = `#${p.num} ${p.name} (${getPlayerMatchMins(p.id)} mins)`;
+      document.getElementById("pa-btn-goal").onclick = () => { closeModal("modal-player-action"); openGoalModal(p.id); };
+      document.getElementById("pa-btn-sub").onclick = () => { closeModal("modal-player-action"); openSubModal(p.id, null); };
+      document.getElementById("pa-btn-yc").onclick = () => { closeModal("modal-player-action"); logDirectCard(p.id, "yellow"); };
+      document.getElementById("pa-btn-rc").onclick = () => { closeModal("modal-player-action"); logDirectCard(p.id, "red"); };
+      openModal("modal-player-action");
+    }
+
+    function openGoalModal(preScorerId = null) {
+      const sSel = document.getElementById("goal-scorer-id");
+      const aSel = document.getElementById("goal-assist-id");
+      sSel.innerHTML = "";
+      aSel.innerHTML = `<option value="">— No Assist / Unassisted —</option>`;
+
+      state.match.lineupIds.forEach(pid => {
+        const p = state.squad.find(x => x.id === pid);
+        if (p) {
+          sSel.innerHTML += `<option value="${p.id}" ${p.id === preScorerId ? 'selected' : ''}>#${p.num}${p.name}</option>`;
+          aSel.innerHTML += `<option value="${p.id}">#${p.num}${p.name}</option>`;
+        }
+      });
+      openModal("modal-goal");
+    }
+
+    function confirmOurGoal() {
+      const scorerId = document.getElementById("goal-scorer-id").value;
+      const assistId = document.getElementById("goal-assist-id").value;
+      const scorer = state.squad.find(p => p.id === scorerId);
+      const assister = assistId ? state.squad.find(p => p.id === assistId) : null;
+
+      pushUndo();
+      state.match.scoreUs += 1;
+      const minStr = getCurrentMinuteStr();
+      state.match.timeline.unshift({
+        min: minStr,
+        type: "goal_us",
+        scorerId,
+        assistId,
+        text: `⚽ GOAL! ${scorer ? scorer.name : 'Us'}${assister ? ` (🎯 Assist: ${assister.name})` : ''}`
+      });
+
+      closeModal("modal-goal");
+      persist();
+      renderTopScoreboard();
+      renderMatchView();
+    }
+
+    function logOppositionGoal() {
+      pushUndo();
+      state.match.scoreThem += 1;
+      state.match.timeline.unshift({
+        min: getCurrentMinuteStr(),
+        type: "goal_them",
+        text: `🥅 Goal Scored by ${state.setup.oppTeam}`
+      });
+      persist();
+      renderTopScoreboard();
+      renderMatchView();
+    }
+
+    function openSubModal(preOffId = null, preOnId = null) {
+      const offSel = document.getElementById("sub-off-id");
+      const onSel = document.getElementById("sub-on-id");
+      offSel.innerHTML = "";
+      onSel.innerHTML = "";
+
+      state.match.lineupIds.forEach(pid => {
+        const p = state.squad.find(x => x.id === pid);
+        if (p) {
+          offSel.innerHTML += `<option value="${p.id}" ${p.id === preOffId ? 'selected' : ''}>#${p.num} ${p.name} (${getPlayerMatchMins(p.id)}m played)</option>`;
+        }
+      });
+
+      const bench = state.squad
+        .filter(p => p.available && !state.match.lineupIds.includes(p.id))
+        .sort((a, b) => getPlayerMatchMins(a.id) - getPlayerMatchMins(b.id));
+
+      bench.forEach(p => {
+        onSel.innerHTML += `<option value="${p.id}" ${p.id === preOnId ? 'selected' : ''}>#${p.num} ${p.name} (${getPlayerMatchMins(p.id)}m played)</option>`;
+      });
+
+      openModal("modal-sub");
+    }
+
+    function confirmRollingSub() {
+      const offId = document.getElementById("sub-off-id").value;
+      const onId = document.getElementById("sub-on-id").value;
+      if (!offId || !onId) return;
+
+      pushUndo();
+      const idx = state.match.lineupIds.indexOf(offId);
+      if (idx !== -1) state.match.lineupIds[idx] = onId;
+      if (!state.match.appearedIds.includes(onId)) state.match.appearedIds.push(onId);
+
+      const pOff = state.squad.find(p => p.id === offId);
+      const pOn = state.squad.find(p => p.id === onId);
+
+      state.match.timeline.unshift({
+        min: getCurrentMinuteStr(),
+        type: "sub",
+        text: `🔄 SUB: ${pOn ? pOn.name : 'Sub'} ON for ${pOff ? pOff.name : 'Player'}`
+      });
+
+      closeModal("modal-sub");
+      persist();
+      renderMatchView();
+      renderLineupView();
+    }
+
+    function openCardModal() {
+      const sel = document.getElementById("card-player-id");
+      sel.innerHTML = "";
+      state.match.lineupIds.forEach(pid => {
+        const p = state.squad.find(x => x.id === pid);
+        if (p) sel.innerHTML += `<option value="${p.id}">#${p.num}${p.name}</option>`;
+      });
+      openModal("modal-card");
+    }
+
+    function confirmCard(color) {
+      const pid = document.getElementById("card-player-id").value;
+      closeModal("modal-card");
+      logDirectCard(pid, color);
+    }
+
+    function logDirectCard(pid, color) {
+      const p = state.squad.find(x => x.id === pid);
+      if (!p) return;
+      pushUndo();
+      if (!state.match.cards[pid]) state.match.cards[pid] = { yellow: 0, red: 0 };
+      if (color === "yellow") state.match.cards[pid].yellow += 1;
+      else state.match.cards[pid].red += 1;
+
+      state.match.timeline.unshift({
+        min: getCurrentMinuteStr(),
+        type: "card",
+        playerId: pid,
+        cardColor: color,
+        text: `${color === 'yellow' ? '🟨 Yellow' : '🟥 Red'} Card: ${p.name}`
+      });
+      persist();
+      renderMatchView();
+    }
+
+    function switchSquadSubtab(mode) {
+      document.getElementById("btn-sub-roster").classList.toggle("active", mode === "roster");
+      document.getElementById("btn-sub-stats").classList.toggle("active", mode === "stats");
+      document.getElementById("squad-roster-pane").style.display = mode === "roster" ? "block" : "none";
+      document.getElementById("squad-stats-pane").style.display = mode === "stats" ? "block" : "none";
+      renderSquadAndSeason();
+    }
+
+    function renderSquadAndSeason() {
+      sanitizeFullState();
+      const availCount = state.squad.filter(p => p.available).length;
+      document.getElementById("squad-count-label").textContent = `${availCount}/${state.squad.length} Available`;
+
+      const rList = document.getElementById("squad-roster-list");
+      rList.innerHTML = "";
+
+      state.squad.forEach(p => {
+        const row = document.createElement("div");
+        row.className = "roster-row" + (!p.available ? " unavailable" : "");
+        row.innerHTML = `
+          <div class="bench-left">
+            <div class="num-circle">${p.num}</div>
+            <div class="bench-name">${p.name}</div>
+          </div>
+          <div class="roster-actions">
+            <button class="btn-avail ${p.available ? 'yes' : 'no'}" onclick="toggleAvailability('${p.id}')">
+              ${p.available ? '✅ Available' : '❌ Absent'}
+            </button>
+            <button class="btn-icon-sq" onclick="editPlayerPrompt('${p.id}')" title="Edit">✏️</button>
+            <button class="btn-icon-sq" onclick="removePlayer('${p.id}')" title="Delete">🗑️</button>
+          </div>
+        `;
+        rList.appendChild(row);
+      });
+
+      const tbody = document.getElementById("season-stats-tbody");
+      tbody.innerHTML = "";
+      const sorted = [...state.squad].sort((a, b) => (state.seasonStats[b.id]?.mins || 0) - (state.seasonStats[a.id]?.mins || 0));
+
+      sorted.forEach(p => {
+        const st = state.seasonStats[p.id] || { apps: 0, starts: 0, subs: 0, mins: 0, goals: 0, assists: 0, yellow: 0, red: 0 };
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.num}</td>
+          <td><strong>${p.name}</strong></td>
+          <td>${st.apps || 0} <span style="color:var(--text-muted); font-size:0.75rem;">(${st.starts \vert{}\vert{} 0}/${st.subs || 0})</span></td>
+          <td>${st.mins || 0}'</td>
+          <td>${st.goals || 0}</td>
+          <td>${st.assists || 0}</td>
+          <td>${st.yellow \vert{}\vert{} 0}/${st.red || 0}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleAvailability(pid) {
+      const p = state.squad.find(x => x.id === pid);
+      if (p) p.available = !p.available;
+      persist();
+      renderSquadAndSeason();
+      renderLineupView();
+      renderMatchView();
+    }
+
+    function addNewPlayer() {
+      const numVal = parseInt(document.getElementById("new-player-num").value) || (state.squad.length + 1);
+      const nameVal = document.getElementById("new-player-name").value.trim();
+      if (!nameVal) return alert("Please enter a player first name.");
+      const newId = "p_" + Date.now();
+      state.squad.push({ id: newId, name: nameVal, num: numVal, available: true });
+      document.getElementById("new-player-num").value = "";
+      document.getElementById("new-player-name").value = "";
+      ensureSeasonStats();
+      persist();
+      renderSquadAndSeason();
+      renderLineupView();
+    }
+
+    function editPlayerPrompt(pid) {
+      const p = state.squad.find(x => x.id === pid);
+      if (!p) return;
+      const newName = prompt("Edit Player First Name:", p.name);
+      if (newName === null) return;
+      const newNum = prompt("Edit Squad Number:", p.num);
+      if (newNum === null) return;
+      p.name = newName.trim() || p.name;
+      p.num = parseInt(newNum) || p.num;
+      persist();
+      window.renderEverything();
+    }
+
+    function removePlayer(pid) {
+      const p = state.squad.find(x => x.id === pid);
+      if (!p || !confirm(`Remove ${p.name} from squad roster?`)) return;
+      state.squad = state.squad.filter(x => x.id !== pid);
+      state.match.lineupIds = state.match.lineupIds.filter(id => id !== pid);
+      persist();
+      window.renderEverything();
+    }
+
+    function commitMatchToSeasonAndArchive() {
+      sanitizeFullState();
+      const s = state.setup;
+      const m = state.match;
+      const isHome = s.venue === "home";
+      const homeName = isHome ? s.myTeam : s.oppTeam;
+      const awayName = isHome ? s.oppTeam : s.myTeam;
+      const homeScore = isHome ? m.scoreUs : m.scoreThem;
+      const awayScore = isHome ? m.scoreThem : m.scoreUs;
+      const dateStr = new Date().toLocaleDateString("en-GB");
+
+      const deltas = {};
+
+      state.squad.forEach(p => {
+        const mins = getPlayerMatchMins(p.id);
+        const started = m.starterIds.includes(p.id);
+        const appeared = started || m.appearedIds.includes(p.id) || mins > 0;
+        const goals = m.timeline.filter(e => e.type === "goal_us" && e.scorerId === p.id).length;
+        const assists = m.timeline.filter(e => e.type === "goal_us" && e.assistId === p.id).length;
+        const yc = m.cards[p.id]?.yellow || 0;
+        const rc = m.cards[p.id]?.red || 0;
+
+        if (appeared || goals || assists || yc || rc) {
+          deltas[p.id] = {
+            apps: appeared ? 1 : 0,
+            starts: started ? 1 : 0,
+            subs: (appeared && !started) ? 1 : 0,
+            mins, goals, assists, yellow: yc, red: rc
+          };
+          const st = state.seasonStats[p.id];
+          st.apps += deltas[p.id].apps;
+          st.starts += deltas[p.id].starts;
+          st.subs += deltas[p.id].subs;
+          st.mins += deltas[p.id].mins;
+          st.goals += deltas[p.id].goals;
+          st.assists += deltas[p.id].assists;
+          st.yellow += deltas[p.id].yellow;
+          st.red += deltas[p.id].red;
+        }
+      });
+
+      let report = `⚽ *MATCHDAY REPORT*\n`;
+      report += `🏟️ *${homeName}${homeScore} – ${awayScore}${awayName}*\n`;
+      report += `📅 Date: ${dateStr} (${s.halfDuration}m halves)\n\n`;
+      report += `📋 *MATCH TIMELINE:*\n`;
+      const chron = [...m.timeline].reverse();
+      chron.forEach(e => { report += `• ${e.min}${e.text}\n`; });
+      report += `\n⏱️ *PLAYER MINUTES:*\n`;
+      state.squad.forEach(p => {
+        if (deltas[p.id]) {
+          const d = deltas[p.id];
+          report += `• #${p.num} ${p.name}:${d.mins}' (${d.starts ? 'Start' : 'Sub'})${d.goals ? ` ⚽x${d.goals}` : ''}${d.assists ? ` 🎯x${d.assists}` : ''}\n`;
+        }
+      });
+
+      state.history.unshift({
+        id: "match_" + Date.now(),
+        date: dateStr,
+        header: `${homeName}${homeScore} – ${awayScore}${awayName}`,
+        report,
+        deltas
+      });
+    }
+
+    function rebuildMatchFromSeasonStats() {
+      sanitizeFullState();
+      const s = state.setup;
+      const isHome = s.venue === "home";
+      const homeName = isHome ? s.myTeam : s.oppTeam;
+      const awayName = isHome ? s.oppTeam : s.myTeam;
+
+      let totalGoalsUs = 0;
+      state.squad.forEach(p => {
+        totalGoalsUs += (state.seasonStats[p.id]?.goals || 0);
+      });
+
+      const oppScoreStr = prompt(`Rebuilding Match Report for ${homeName} vs${awayName}.\n\nSeason Stats show our team scored ${totalGoalsUs} goal(s).\nHow many goals did${s.oppTeam} score?`, "0");
+      if (oppScoreStr === null) return;
+      const oppGoals = parseInt(oppScoreStr) || 0;
+
+      const homeScore = isHome ? totalGoalsUs : oppGoals;
+      const awayScore = isHome ? oppGoals : totalGoalsUs;
+      const dateStr = new Date().toLocaleDateString("en-GB");
+
+      let report = `⚽ *MATCHDAY REPORT*\n`;
+      report += `🏟️ *${homeName}${homeScore} – ${awayScore}${awayName}*\n`;
+      report += `📅 Date: ${dateStr} (${s.halfDuration}m halves)\n\n`;
+
+      report += `⚽ *GOALS & ASSISTS:*\n`;
+      let hasGoals = false;
+      state.squad.forEach(p => {
+        const st = state.seasonStats[p.id];
+        if (st && (st.goals > 0 || st.assists > 0)) {
+          hasGoals = true;
+          report += `• #${p.num} ${p.name}:${st.goals ? `⚽ x${st.goals} ` : ''}${st.assists ? `🎯 x${st.assists}` : ''}\n`;
+        }
+      });
+      if (!hasGoals) report += `• None logged\n`;
+
+      report += `\n⏱️ *PLAYER MINUTES:*\n`;
+      state.squad.forEach(p => {
+        const st = state.seasonStats[p.id];
+        if (st && (st.apps > 0 || st.mins > 0)) {
+          const roleLabel = st.starts > 0 ? "Start" : "Sub";
+          report += `• #${p.num} ${p.name}:${st.mins}' (${roleLabel})${st.goals ? ` ⚽x${st.goals}` : ''}${st.assists ? ` 🎯x${st.assists}` : ''}\n`;
+        }
+      });
+
+      state.history.unshift({
+        id: "match_rebuilt_" + Date.now(),
+        date: dateStr,
+        header: `${homeName}${homeScore} – ${awayScore}${awayName}`,
+        report,
+        deltas: null
+      });
+
+      persist(true);
+      renderHistoryView();
+      openReportModal(report);
+    }
+
+    function openManualMatchModal() {
+      document.getElementById("past-date").value = new Date().toISOString().split("T")[0];
+      document.getElementById("past-opp").value = "";
+      document.getElementById("past-score-us").value = 0;
+      document.getElementById("past-score-them").value = 0;
+      document.getElementById("past-update-season-chk").checked = true;
+
+      const defaultFullMins = (state.setup.halfDuration || 40) * 2;
+      const container = document.getElementById("past-players-container");
+      container.innerHTML = "";
+
+      state.squad.forEach((p, idx) => {
+        const defaultRole = idx < 11 ? "start" : "sub";
+        const defaultMins = idx < 11 ? defaultFullMins : 30;
+        const row = document.createElement("div");
+        row.className = "past-player-row";
+        row.innerHTML = `
+          <div style="font-weight:900; font-size:0.85rem;">#${p.num}${p.name}</div>
+          <div style="display:flex; gap:5px; align-items:center;">
+            <select id="past_role_${p.id}" class="day-select" style="min-height:38px; padding:0 6px; font-size:0.78rem; width:78px;">
+              <option value="start" ${defaultRole === 'start' ? 'selected' : ''}>Start</option>
+              <option value="sub" ${defaultRole === 'sub' ? 'selected' : ''}>Sub</option>
+              <option value="dnp">DNP</option>
+            </select>
+            <input type="number" id="past_mins_${p.id}" class="mini-num-input" value="${defaultMins}" title="Minutes">
+            <input type="number" id="past_g_${p.id}" class="mini-num-input" value="0" min="0" title="Goals">
+            <input type="number" id="past_a_${p.id}" class="mini-num-input" value="0" min="0" title="Assists">
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      openModal("modal-past-match");
+    }
+
+    function savePastMatchResult() {
+      const rawDate = document.getElementById("past-date").value;
+      const dateStr = rawDate ? new Date(rawDate).toLocaleDateString("en-GB") : new Date().toLocaleDateString("en-GB");
+      const venue = document.getElementById("past-venue").value;
+      const opp = document.getElementById("past-opp").value.trim() || "Opposition";
+      const scoreUs = parseInt(document.getElementById("past-score-us").value) || 0;
+      const scoreThem = parseInt(document.getElementById("past-score-them").value) || 0;
+      const shouldCommitStats = document.getElementById("past-update-season-chk").checked;
+
+      const isHome = venue === "home";
+      const homeName = isHome ? state.setup.myTeam : opp;
+      const awayName = isHome ? opp : state.setup.myTeam;
+      const homeScore = isHome ? scoreUs : scoreThem;
+      const awayScore = isHome ? scoreThem : scoreUs;
+
+      sanitizeFullState();
+      const deltas = {};
+      let report = `⚽ *MATCHDAY REPORT*\n🏟️ *${homeName} ${homeScore} –${awayScore} ${awayName}*\n📅 Date: ${dateStr}\n\n⏱️ *PLAYER BREAKDOWN:*\n`;
+
+      state.squad.forEach(p => {
+        const role = document.getElementById(`past_role_${p.id}`).value;
+        if (role !== "dnp") {
+          const mins = parseInt(document.getElementById(`past_mins_${p.id}`).value) || 0;
+          const goals = parseInt(document.getElementById(`past_g_${p.id}`).value) || 0;
+          const assists = parseInt(document.getElementById(`past_a_${p.id}`).value) || 0;
+
+          if (shouldCommitStats) {
+            deltas[p.id] = {
+              apps: 1,
+              starts: role === "start" ? 1 : 0,
+              subs: role === "sub" ? 1 : 0,
+              mins, goals, assists, yellow: 0, red: 0
+            };
+
+            const st = state.seasonStats[p.id];
+            st.apps += 1;
+            st.starts += deltas[p.id].starts;
+            st.subs += deltas[p.id].subs;
+            st.mins += mins;
+            st.goals += goals;
+            st.assists += assists;
+          }
+
+          report += `• #${p.num} ${p.name}:${mins}' (${role === 'start' ? 'Start' : 'Sub'})${goals ? ` ⚽x${goals}` : ''}${assists ? ` 🎯x${assists}` : ''}\n`;
+        }
+      });
+
+      state.history.unshift({
+        id: "match_" + Date.now(),
+        date: dateStr,
+        header: `${homeName}${homeScore} – ${awayScore}${awayName}`,
+        report,
+        deltas: shouldCommitStats ? deltas : null
+      });
+
+      closeModal("modal-past-match");
+      persist(true);
+      window.renderEverything();
+    }
+
+    function renderHistoryView() {
+      sanitizeFullState();
+      const list = document.getElementById("history-archive-list");
+      if (!list) return;
+
+      if (!state.history.length) {
+        list.innerHTML = `
+          <div style="text-align:center; color:var(--text-muted); padding:12px; font-weight:700;">
+            No archived matches in list yet. Tap the green button above to restore today's match report from your Season Stats!
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = "";
+      state.history.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "roster-row";
+        row.style.flexDirection = "column";
+        row.style.alignItems = "stretch";
+        row.style.gap = "8px";
+
+        const topBar = document.createElement("div");
+        topBar.style.display = "flex";
+        topBar.style.justifyContent = "space-between";
+        topBar.style.alignItems = "center";
+        topBar.style.gap = "8px";
+
+        const infoDiv = document.createElement("div");
+        infoDiv.innerHTML = `
+          <div style="font-weight:900; font-size:0.95rem; color:var(--text-main);">${item.header || 'Match Report'}</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">📅 ${item.date || ''}</div>
+        `;
+
+        const btnGroup = document.createElement("div");
+        btnGroup.style.display = "flex";
+        btnGroup.style.gap = "6px";
+
+        const repBtn = document.createElement("button");
+        repBtn.className = "btn-avail yes";
+        repBtn.textContent = "📋 Report";
+        repBtn.onclick = () => openReportModal(item.report || item.header);
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-icon-sq";
+        delBtn.textContent = "🗑️";
+        delBtn.onclick = () => deleteHistoryMatch(item.id);
+
+        btnGroup.appendChild(repBtn);
+        btnGroup.appendChild(delBtn);
+        topBar.appendChild(infoDiv);
+        topBar.appendChild(btnGroup);
+        row.appendChild(topBar);
+        list.appendChild(row);
+      });
+    }
+
+    function openReportModal(text) {
+      activeReportText = text || "";
+      document.getElementById("report-preview-box").textContent = activeReportText;
+      openModal("modal-report");
+    }
+
+    function copyReportForWhatsApp() {
+      navigator.clipboard.writeText(activeReportText);
+      alert("Match Report copied! Ready to paste into WhatsApp.");
+    }
+
+    function nativeShareReport() {
+      if (navigator.share) {
+        navigator.share({ title: "Matchday Report", text: activeReportText }).catch(() => {});
+      } else {
+        copyReportForWhatsApp();
+      }
+    }
+
+    function deleteHistoryMatch(id) {
+      sanitizeFullState();
+      const item = state.history.find(x => x.id === id);
+      if (!item || !confirm(`Delete "${item.header}" from archive?`)) return;
+
+      if (item.deltas && confirm("Do you also want to subtract this match's minutes & goals from Season Totals?")) {
+        Object.keys(item.deltas).forEach(pid => {
+          const d = item.deltas[pid];
+          const st = state.seasonStats[pid];
+          if (st) {
+            st.apps = Math.max(0, st.apps - (d.apps || 0));
+            st.starts = Math.max(0, st.starts - (d.starts || 0));
+            st.subs = Math.max(0, st.subs - (d.subs || 0));
+            st.mins = Math.max(0, st.mins - (d.mins || 0));
+            st.goals = Math.max(0, st.goals - (d.goals || 0));
+            st.assists = Math.max(0, st.assists - (d.assists || 0));
+            st.yellow = Math.max(0, st.yellow - (d.yellow || 0));
+            st.red = Math.max(0, st.red - (d.red || 0));
+          }
+        });
+      }
+
+      state.history = state.history.filter(x => x.id !== id);
+      persist(true);
+      window.renderEverything();
+    }
+
+    window.renderEverything = function() {
+      try { renderTopScoreboard(); } catch (e) { console.error(e); }
+      try { renderMatchView(); } catch (e) { console.error(e); }
+      try { renderLineupView(); } catch (e) { console.error(e); }
+      try { renderSquadAndSeason(); } catch (e) { console.error(e); }
+      try { renderHistoryView(); } catch (e) { console.error(e); }
+    };
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadLocal();
+      recoverLegacyLocalHistory();
+      initFirebaseSync();
+      startSecondLoop();
+      requestScreenWakeLock();
+      window.renderEverything();
+    });
+  </script>
+</body>
+</html>
