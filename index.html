@@ -59,13 +59,14 @@
     .pitch-overlay-badge { position: absolute; top: 8px; background: rgba(6,16,30,0.88); color: #fff; font-size: 0.72rem; font-weight: 900; padding: 4px 9px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); z-index: 5; pointer-events: none; }
     .pitch-overlay-badge.left { left: 8px; }
     .pitch-overlay-badge.right { right: 8px; }
-    .pitch-token { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 10; width: 68px; }
-    .pitch-token.selected .token-disc { outline: 4px solid #facc15; transform: scale(1.12); }
-    .token-disc { width: 48px; height: 48px; border-radius: 50%; background: var(--sky-token); border: 3px solid var(--navy-950); color: var(--navy-950); font-size: 1.15rem; font-weight: 900; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.45); }
+    .pitch-token { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: grab; z-index: 10; width: 68px; touch-action: none; }
+    .pitch-token.selected .token-disc, .pitch-token.dragging .token-disc { outline: 4px solid #facc15; transform: scale(1.15); }
+    .pitch-token.dragging { z-index: 50; }
+    .token-disc { width: 48px; height: 48px; border-radius: 50%; background: var(--sky-token); border: 3px solid var(--navy-950); color: var(--navy-950); font-size: 1.15rem; font-weight: 900; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.45); pointer-events: none; }
     .token-role-pill { position: absolute; top: -6px; right: -12px; background: var(--navy-950); color: #fff; font-size: 0.6rem; font-weight: 900; padding: 1px 5px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.4); }
     .token-min-pill { position: absolute; bottom: -5px; left: -10px; background: #fef08a; color: #0f172a; font-size: 0.62rem; font-weight: 900; padding: 1px 4px; border-radius: 4px; border: 1.5px solid var(--navy-950); }
     .token-card-flag { position: absolute; top: -6px; left: -8px; font-size: 0.75rem; }
-    .token-label { margin-top: 4px; background: rgba(6,16,30,0.92); color: #fff; font-size: 0.74rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.25); max-width: 72px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+    .token-label { margin-top: 4px; background: rgba(6,16,30,0.92); color: #fff; font-size: 0.74rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.25); max-width: 72px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; pointer-events: none; }
     .touchline-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
     .btn-touch { min-height: 52px; border: 2px solid var(--text-main); border-radius: 12px; font-size: 0.95rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; box-shadow: 0 2px 0 rgba(15,23,42,0.15); }
     .btn-touch.goal-us { background: #dcfce7; color: #14532d; border-color: #15803d; }
@@ -88,9 +89,9 @@
     .segmented-toggle { display: grid; grid-template-columns: 1fr 1fr; background: #e2e8f0; border: 2px solid var(--text-main); border-radius: 10px; padding: 3px; min-height: var(--touch-min); }
     .seg-btn { border: none; background: transparent; font-weight: 900; font-size: 0.85rem; color: var(--text-muted); border-radius: 7px; cursor: pointer; }
     .seg-btn.active { background: var(--navy-900); color: #fff; }
-    .lineup-btn-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 6px; }
-    .btn-sky { min-height: var(--touch-min); background: var(--sky-token); border: 2px solid var(--text-main); border-radius: 10px; font-weight: 900; font-size: 0.95rem; color: var(--navy-950); cursor: pointer; padding: 0 14px; }
-    .btn-outline { min-height: var(--touch-min); background: #f1f5f9; border: 2px solid var(--text-main); border-radius: 10px; font-weight: 800; font-size: 0.88rem; color: var(--text-main); cursor: pointer; padding: 0 14px; }
+    .lineup-btn-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; margin-top: 6px; }
+    .btn-sky { min-height: var(--touch-min); background: var(--sky-token); border: 2px solid var(--text-main); border-radius: 10px; font-weight: 900; font-size: 0.9rem; color: var(--navy-950); cursor: pointer; padding: 0 12px; }
+    .btn-outline { min-height: var(--touch-min); background: #f1f5f9; border: 2px solid var(--text-main); border-radius: 10px; font-weight: 800; font-size: 0.82rem; color: var(--text-main); cursor: pointer; padding: 0 10px; }
     .subtab-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
     .subtab-btn { min-height: var(--touch-min); border: 2px solid var(--text-main); border-radius: 10px; background: #e2e8f0; color: var(--text-main); font-weight: 900; font-size: 0.9rem; cursor: pointer; }
     .subtab-btn.active { background: var(--navy-900); color: #fff; }
@@ -127,7 +128,7 @@
 
   <header class="top-cockpit">
     <div class="app-bar">
-      <div class="brand-logo"><span class="brand-dot"></span><span>MATCHDAY <small style="font-size:0.65rem;color:#72c2eb;">v5.0</small></span></div>
+      <div class="brand-logo"><span class="brand-dot"></span><span>MATCHDAY <small style="font-size:0.65rem;color:#72c2eb;">v5.1</small></span></div>
       <div class="header-pills">
         <button class="status-pill" onclick="forceCloudPull()"><span class="dot-indicator active" id="cloud-dot"></span><span id="cloud-text">Cloud Sync</span></button>
         <button class="status-pill" onclick="toggleWakeLock()"><span class="dot-indicator active" id="wake-dot"></span><span id="wake-text">Screen Lock: Auto</span></button>
@@ -156,9 +157,9 @@
   <!-- TAB 1: MATCH -->
   <main id="view-match" class="view-section active">
     <div class="pitch-wrapper">
-      <div class="pitch-board">
+      <div class="pitch-board" id="match-pitch-board">
         <div class="pitch-overlay-badge left" id="match-formation-badge">4-3-3</div>
-        <div class="pitch-overlay-badge right">Tap Player for Actions</div>
+        <div class="pitch-overlay-badge right">Tap = Action • Drag = Move</div>
         <svg class="pitch-svg" viewBox="0 0 100 140" preserveAspectRatio="none">
           <rect x="3" y="3" width="94" height="134" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <line x1="3" y1="70" x2="97" y2="70" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
@@ -207,7 +208,7 @@
         <div class="field-group"><label class="field-label">Half Mins</label><input type="number" id="input-half-mins" class="day-input" value="40" min="5" max="60" onchange="saveSetupConfig()"></div>
       </div>
       <div class="field-group">
-        <label class="field-label">Tactical Formation</label>
+        <label class="field-label">Base Tactical Formation</label>
         <select id="select-formation" class="day-select" onchange="changeFormation(this.value)">
           <option value="4-3-3">4-3-3 (Attacking)</option>
           <option value="4-2-3-1">4-2-3-1 (Mid-Block Compact)</option>
@@ -219,14 +220,15 @@
       </div>
       <div class="lineup-btn-row">
         <button class="btn-sky" onclick="autoFillStartingXI()">⚡ Auto-Fill XI</button>
+        <button class="btn-outline" onclick="resetFormationCoords()">📐 Reset Shape</button>
         <button class="btn-outline" onclick="resetMatchSheet()">🔄 Reset Match</button>
       </div>
     </div>
-    <div class="info-banner" id="swap-helper-banner">Tap any two players (pitch or bench) to swap positions.</div>
+    <div class="info-banner" id="swap-helper-banner">Drag any token to custom coordinates, or tap two players to swap!</div>
     <div class="pitch-wrapper">
-      <div class="pitch-board">
+      <div class="pitch-board" id="lineup-pitch-board">
         <div class="pitch-overlay-badge left" id="lineup-formation-badge">4-3-3</div>
-        <div class="pitch-overlay-badge right">Starting XI</div>
+        <div class="pitch-overlay-badge right">Drag to Move • Tap to Swap</div>
         <svg class="pitch-svg" viewBox="0 0 100 140" preserveAspectRatio="none">
           <rect x="3" y="3" width="94" height="134" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <line x1="3" y1="70" x2="97" y2="70" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
@@ -439,9 +441,8 @@
       "5-3-2": [{role:"GK",x:50,y:89},{role:"LWB",x:14,y:68},{role:"LCB",x:32,y:75},{role:"CB",x:50,y:77},{role:"RCB",x:68,y:75},{role:"RWB",x:86,y:68},{role:"LCM",x:30,y:47},{role:"CM",x:50,y:50},{role:"RCM",x:70,y:47},{role:"LS",x:36,y:20},{role:"RS",x:64,y:20}]
     };
 
-    // updatedAt is 0 by default so a fresh tab NEVER overwrites Firebase cloud data
     let state = {
-      setup: { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3" },
+      setup: { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3", customCoords: null },
       squad: JSON.parse(JSON.stringify(INITIAL_SQUAD)),
       match: { status: "PRE", running: false, elapsedSec: 0, lastTickAt: null, scoreUs: 0, scoreThem: 0, lineupIds: ["p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11"], starterIds: ["p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11"], appearedIds: [], playerSeconds: {}, cards: {}, timeline: [] },
       seasonStats: {},
@@ -462,6 +463,76 @@
       if (target) target.classList.add("active");
       if (btn) btn.classList.add("active");
       renderEverything();
+    }
+
+    function getActiveCoords() {
+      const fName = state.setup.formation || "4-3-3";
+      const base = FORMATIONS[fName] || FORMATIONS["4-3-3"];
+      const custom = toArray(state.setup.customCoords);
+      if (custom.length === 11 && custom[0] && typeof custom[0].x === "number") {
+        return custom;
+      }
+      state.setup.customCoords = JSON.parse(JSON.stringify(base));
+      return state.setup.customCoords;
+    }
+
+    // FREEFORM POINTER/TOUCH DRAG + TAP ENGINE FOR PITCH TOKENS
+    function bindTokenDragAndTap(el, slotIdx, pid, boardId, onTapCallback) {
+      let startX = 0, startY = 0, isDragging = false, pointerDown = false;
+
+      el.addEventListener("pointerdown", e => {
+        pointerDown = true;
+        isDragging = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        try { el.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+
+      el.addEventListener("pointermove", e => {
+        if (!pointerDown) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!isDragging && Math.hypot(dx, dy) >= 8) {
+          isDragging = true;
+          el.classList.add("dragging");
+        }
+        if (isDragging) {
+          const board = document.getElementById(boardId);
+          if (!board) return;
+          const rect = board.getBoundingClientRect();
+          const nx = Math.max(8, Math.min(92, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
+          const ny = Math.max(8, Math.min(92, Math.round(((e.clientY - rect.top) / rect.height) * 100)));
+          el.style.left = nx + "%";
+          el.style.top = ny + "%";
+          const coords = getActiveCoords();
+          if (coords[slotIdx]) {
+            coords[slotIdx].x = nx;
+            coords[slotIdx].y = ny;
+          }
+        }
+      });
+
+      const finishPointer = e => {
+        if (!pointerDown) return;
+        pointerDown = false;
+        el.classList.remove("dragging");
+        try { el.releasePointerCapture(e.pointerId); } catch (err) {}
+        if (isDragging) {
+          isDragging = false;
+          persist(true);
+          renderLineupView();
+          renderMatchView();
+        } else {
+          onTapCallback();
+        }
+      };
+
+      el.addEventListener("pointerup", finishPointer);
+      el.addEventListener("pointercancel", () => {
+        pointerDown = false;
+        isDragging = false;
+        el.classList.remove("dragging");
+      });
     }
 
     function normalizeHistoryItem(it, idx) {
@@ -488,9 +559,10 @@
     }
 
     function sanitizeState() {
-      if (!state.setup) state.setup = { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3" };
+      if (!state.setup) state.setup = { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3", customCoords: null };
       state.squad = toArray(state.squad);
       if (!state.squad.length) state.squad = JSON.parse(JSON.stringify(INITIAL_SQUAD));
+      getActiveCoords();
       if (!state.match) state.match = {};
       state.match.lineupIds = toArray(state.match.lineupIds);
       if (!state.match.lineupIds.length) state.match.lineupIds = state.squad.slice(0, 11).map(p => p.id);
@@ -561,7 +633,6 @@
 
         rtdb.ref(".info/connected").on("value", snap => setCloudStatus(snap.val() === true ? "online" : "offline"));
 
-        // Recover any stats or history from legacy Firebase node `matchday_data`
         rtdb.ref("matchday_data").once("value", snap => {
           if (mergeExternalData(snap.val())) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -735,7 +806,7 @@
       sanitizeState();
       const fName = state.setup.formation || "4-3-3";
       document.getElementById("match-formation-badge").textContent = fName;
-      const coords = FORMATIONS[fName] || FORMATIONS["4-3-3"];
+      const coords = getActiveCoords();
       const tokenContainer = document.getElementById("match-pitch-tokens");
       tokenContainer.innerHTML = "";
 
@@ -749,8 +820,8 @@
         const el = document.createElement("div");
         el.className = "pitch-token";
         el.style.left = slot.x + "%"; el.style.top = slot.y + "%";
-        el.onclick = () => openQuickPlayerAction(player.id);
         el.innerHTML = `<div class="token-disc">${player.num}<span class="token-role-pill">${slot.role}</span><span class="token-min-pill">${mins}'</span>${cardBadge ? `<span class="token-card-flag">${cardBadge}</span>` : ""}</div><div class="token-label">${player.name}</div>`;
+        bindTokenDragAndTap(el, idx, player.id, "match-pitch-board", () => openQuickPlayerAction(player.id));
         tokenContainer.appendChild(el);
       });
 
@@ -782,7 +853,7 @@
       document.getElementById("seg-away").classList.toggle("active", state.setup.venue === "away");
       document.getElementById("lineup-formation-badge").textContent = state.setup.formation;
 
-      const coords = FORMATIONS[state.setup.formation] || FORMATIONS["4-3-3"];
+      const coords = getActiveCoords();
       const container = document.getElementById("lineup-pitch-tokens");
       container.innerHTML = "";
 
@@ -793,8 +864,8 @@
         const el = document.createElement("div");
         el.className = "pitch-token" + (isSel ? " selected" : "");
         el.style.left = slot.x + "%"; el.style.top = slot.y + "%";
-        el.onclick = () => handleLineupSwapTap({ type: "pitch", slotIndex: idx, playerId: pid });
         el.innerHTML = `<div class="token-disc">${player.num}<span class="token-role-pill">${slot.role}</span></div><div class="token-label">${player.name}</div>`;
+        bindTokenDragAndTap(el, idx, pid, "lineup-pitch-board", () => handleLineupSwapTap({ type: "pitch", slotIndex: idx, playerId: pid }));
         container.appendChild(el);
       });
 
@@ -816,7 +887,7 @@
       if (!selectedSwapTarget) {
         selectedSwapTarget = target;
         const p = state.squad.find(x => x.id === target.playerId);
-        banner.textContent = `Selected ${p ? p.name : 'Player'} — Now tap another player to swap!`;
+        banner.textContent = `Selected ${p ? p.name : 'Player'} — Tap another player to swap, or drag any token!`;
         renderLineupView();
         return;
       }
@@ -829,7 +900,7 @@
         state.match.lineupIds[target.slotIndex] = selectedSwapTarget.playerId;
       }
       selectedSwapTarget = null;
-      banner.textContent = "Tap any two players (pitch or bench) to swap positions.";
+      banner.textContent = "Drag any token to custom coordinates, or tap two players to swap!";
       persist(); renderLineupView(); renderMatchView();
     }
 
@@ -840,7 +911,16 @@
       persist(); renderTopScoreboard();
     }
     function setVenue(v) { state.setup.venue = v; persist(); renderLineupView(); renderTopScoreboard(); }
-    function changeFormation(val) { state.setup.formation = val; persist(); renderLineupView(); renderMatchView(); }
+    function changeFormation(val) {
+      state.setup.formation = val;
+      state.setup.customCoords = JSON.parse(JSON.stringify(FORMATIONS[val] || FORMATIONS["4-3-3"]));
+      persist(); renderLineupView(); renderMatchView();
+    }
+    function resetFormationCoords() {
+      const f = state.setup.formation || "4-3-3";
+      state.setup.customCoords = JSON.parse(JSON.stringify(FORMATIONS[f] || FORMATIONS["4-3-3"]));
+      persist(); renderLineupView(); renderMatchView();
+    }
     function autoFillStartingXI() {
       state.match.lineupIds = state.squad.filter(p => p.available).slice(0, 11).map(p => p.id);
       persist(); renderLineupView(); renderMatchView();
