@@ -5,955 +5,172 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0b192c">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Matchday — Pitchside Coaching App</title>
-
-  <!-- Firebase Realtime Database SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <style>
     :root {
-      --navy-950: #06101e;
-      --navy-900: #0b192c;
-      --navy-800: #132743;
-      --navy-700: #1e3a5f;
-      --sky-token: #72c2eb;
-      --sky-dark: #3898ec;
-      --pitch-dark: #1b6b36;
-      --pitch-light: #207a3e;
-      --day-bg: #f1f5f9;
-      --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --border-strong: #94a3b8;
-      --green-action: #15803d;
-      --green-bright: #16a34a;
-      --amber-warn: #d97706;
-      --red-danger: #dc2626;
-      --teal-badge: #134e4a;
-      --teal-text: #5eead4;
-      --touch-min: 48px;
+      --navy-950: #06101e; --navy-900: #0b192c; --navy-800: #132743; --navy-700: #1e3a5f;
+      --sky-token: #72c2eb; --pitch-dark: #1b6b36; --pitch-light: #207a3e;
+      --day-bg: #f1f5f9; --card-bg: #ffffff; --text-main: #0f172a; --text-muted: #475569;
+      --green-bright: #16a34a; --amber-warn: #d97706; --red-danger: #dc2626;
+      --teal-badge: #134e4a; --teal-text: #5eead4; --touch-min: 48px;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--day-bg);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: 80px;
-      overflow-x: hidden;
-    }
-
-    .top-cockpit {
-      background-color: var(--navy-900);
-      color: #ffffff;
-      padding: 10px 12px 12px;
-      border-bottom: 3px solid var(--navy-700);
-      position: sticky;
-      top: 0;
-      z-index: 900;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    }
-
-    .app-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 900;
-      font-size: 0.95rem;
-      letter-spacing: 0.8px;
-      color: #ffffff;
-    }
-
-    .brand-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background-color: var(--sky-token);
-      display: inline-block;
-    }
-
-    .header-pills {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .status-pill {
-      background: var(--navy-800);
-      border: 1px solid var(--navy-700);
-      color: #cbd5e1;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 5px 9px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-    }
-
-    .dot-indicator {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #94a3b8;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--day-bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 80px; overflow-x: hidden; }
+    .top-cockpit { background: var(--navy-900); color: #fff; padding: 10px 12px 12px; border-bottom: 3px solid var(--navy-700); position: sticky; top: 0; z-index: 900; box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+    .app-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .brand-logo { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 0.95rem; letter-spacing: 0.8px; color: #fff; }
+    .brand-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--sky-token); display: inline-block; }
+    .header-pills { display: flex; gap: 6px; align-items: center; }
+    .status-pill { background: var(--navy-800); border: 1px solid var(--navy-700); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 5px 9px; border-radius: 999px; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+    .dot-indicator { width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; }
     .dot-indicator.active { background: #22c55e; }
     .dot-indicator.syncing { background: #f59e0b; }
-
-    .scoreboard-row {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 0 10px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .score-team-col {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+    .scoreboard-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 6px 0 10px; border-top: 1px solid rgba(255,255,255,0.08); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .score-team-col { display: flex; flex-direction: column; overflow: hidden; }
     .score-team-col.home { align-items: flex-start; text-align: left; }
     .score-team-col.away { align-items: flex-end; text-align: right; }
-
-    .venue-pill {
-      font-size: 0.65rem;
-      font-weight: 900;
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      margin-bottom: 3px;
-      letter-spacing: 0.4px;
-    }
-    .venue-pill.us {
-      background-color: var(--teal-badge);
-      color: var(--teal-text);
-      border: 1px solid #0d9488;
-    }
-    .venue-pill.them {
-      background-color: #1e293b;
-      color: #94a3b8;
-      border: 1px solid #334155;
-    }
-
-    .score-team-name {
-      font-size: 1.05rem;
-      font-weight: 900;
-      color: #ffffff;
-      line-height: 1.15;
-      max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .score-center-box {
-      background: var(--navy-950);
-      border: 2px solid var(--navy-700);
-      border-radius: 12px;
-      padding: 6px 16px;
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: #ffffff;
-      letter-spacing: 2px;
-      min-width: 96px;
-      text-align: center;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
-    }
-
-    .clock-controls-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
-      gap: 8px;
-    }
-
-    .clock-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .period-pill {
-      background: #1e293b;
-      border: 1.5px solid #475569;
-      color: #e2e8f0;
-      font-size: 0.72rem;
-      font-weight: 900;
-      padding: 6px 10px;
-      border-radius: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .period-pill.live {
-      background: #064e3b;
-      border-color: #10b981;
-      color: #6ee7b7;
-    }
-
-    .match-timer {
-      font-size: 1.75rem;
-      font-weight: 900;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.5px;
-      color: #ffffff;
-    }
-
-    .stoppage-badge {
-      font-size: 1rem;
-      color: #fbbf24;
-      font-weight: 900;
-      margin-left: 4px;
-    }
-
-    .clock-adjust-group {
-      display: flex;
-      gap: 6px;
-    }
-
-    .btn-adj {
-      background: var(--navy-800);
-      border: 1.5px solid var(--navy-700);
-      color: #cbd5e1;
-      font-weight: 800;
-      font-size: 0.8rem;
-      min-width: 44px;
-      height: 38px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .btn-adj:active { background: var(--navy-700); }
-
-    .primary-clock-bars {
-       display: flex;
-       gap: 8px;
-       margin-top: 10px;
-    }
-
-    .btn-start-bar {
-      flex: 1;
-      min-height: var(--touch-min);
-      background: var(--green-bright);
-      border: 2px solid #22c55e;
-      color: #ffffff;
-      font-size: 1rem;
-      font-weight: 900;
-      border-radius: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-      padding: 8px 12px;
-    }
+    .venue-pill { font-size: 0.65rem; font-weight: 900; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; margin-bottom: 3px; }
+    .venue-pill.us { background: var(--teal-badge); color: var(--teal-text); border: 1px solid #0d9488; }
+    .venue-pill.them { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+    .score-team-name { font-size: 1.05rem; font-weight: 900; color: #fff; line-height: 1.15; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .score-center-box { background: var(--navy-950); border: 2px solid var(--navy-700); border-radius: 12px; padding: 6px 16px; font-size: 1.75rem; font-weight: 900; color: #fff; letter-spacing: 2px; min-width: 96px; text-align: center; }
+    .clock-controls-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 8px; }
+    .clock-left { display: flex; align-items: center; gap: 10px; }
+    .period-pill { background: #1e293b; border: 1.5px solid #475569; color: #e2e8f0; font-size: 0.72rem; font-weight: 900; padding: 6px 10px; border-radius: 8px; text-transform: uppercase; }
+    .period-pill.live { background: #064e3b; border-color: #10b981; color: #6ee7b7; }
+    .match-timer { font-size: 1.75rem; font-weight: 900; font-variant-numeric: tabular-nums; color: #fff; }
+    .stoppage-badge { font-size: 1rem; color: #fbbf24; font-weight: 900; margin-left: 4px; }
+    .clock-adjust-group { display: flex; gap: 6px; }
+    .btn-adj { background: var(--navy-800); border: 1.5px solid var(--navy-700); color: #cbd5e1; font-weight: 800; font-size: 0.8rem; min-width: 44px; height: 38px; border-radius: 8px; cursor: pointer; }
+    .primary-clock-bars { display: flex; gap: 8px; margin-top: 10px; }
+    .btn-start-bar { flex: 1; min-height: var(--touch-min); background: var(--green-bright); border: 2px solid #22c55e; color: #fff; font-size: 1rem; font-weight: 900; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; }
     .btn-start-bar.amber { background: var(--amber-warn); border-color: #fbbf24; }
     .btn-start-bar.red { background: var(--red-danger); border-color: #f87171; }
     .btn-start-bar.navy { background: var(--navy-700); border-color: #64748b; }
-
-    .view-section {
-      display: none;
-      padding: 12px;
-      max-width: 600px;
-      width: 100%;
-      margin: 0 auto;
-    }
+    .view-section { display: none; padding: 12px; max-width: 600px; width: 100%; margin: 0 auto; }
     .view-section.active { display: block; }
-
-    .day-card {
-      background: var(--card-bg);
-      border: 2px solid var(--text-main);
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 3px 0 rgba(15, 23, 42, 0.12);
-    }
-
-    .day-card-title {
-      font-size: 0.9rem;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      color: var(--text-main);
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .pitch-wrapper {
-      background: var(--card-bg);
-      border: 2px solid var(--text-main);
-      border-radius: 14px;
-      padding: 8px;
-      margin-bottom: 12px;
-      box-shadow: 0 3px 0 rgba(15, 23, 42, 0.12);
-    }
-
-    .pitch-board {
-      position: relative;
-      width: 100%;
-      height: 430px;
-      background: repeating-linear-gradient(
-        0deg,
-        var(--pitch-dark) 0px,
-        var(--pitch-dark) 36px,
-        var(--pitch-light) 36px,
-        var(--pitch-light) 72px
-      );
-      border: 2.5px solid #ffffff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.25);
-    }
-
-    .pitch-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-
-    .pitch-overlay-badge {
-      position: absolute;
-      top: 8px;
-      background: rgba(6, 16, 30, 0.88);
-      color: #ffffff;
-      font-size: 0.72rem;
-      font-weight: 900;
-      padding: 4px 9px;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.2);
-      z-index: 5;
-      pointer-events: none;
-    }
+    .day-card { background: var(--card-bg); border: 2px solid var(--text-main); border-radius: 14px; padding: 14px; margin-bottom: 14px; box-shadow: 0 3px 0 rgba(15,23,42,0.12); }
+    .day-card-title { font-size: 0.9rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .pitch-wrapper { background: var(--card-bg); border: 2px solid var(--text-main); border-radius: 14px; padding: 8px; margin-bottom: 12px; box-shadow: 0 3px 0 rgba(15,23,42,0.12); }
+    .pitch-board { position: relative; width: 100%; height: 430px; background: repeating-linear-gradient(0deg, var(--pitch-dark) 0px, var(--pitch-dark) 36px, var(--pitch-light) 36px, var(--pitch-light) 72px); border: 2.5px solid #fff; border-radius: 10px; overflow: hidden; }
+    .pitch-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .pitch-overlay-badge { position: absolute; top: 8px; background: rgba(6,16,30,0.88); color: #fff; font-size: 0.72rem; font-weight: 900; padding: 4px 9px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); z-index: 5; pointer-events: none; }
     .pitch-overlay-badge.left { left: 8px; }
     .pitch-overlay-badge.right { right: 8px; }
-
-    .pitch-token {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      z-index: 10;
-      width: 68px;
-      transition: transform 0.12s ease;
-    }
-    .pitch-token.selected .token-disc {
-      outline: 4px solid #facc15;
-      transform: scale(1.12);
-    }
-
-    .token-disc {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background-color: var(--sky-token);
-      border: 3px solid var(--navy-950);
-      color: var(--navy-950);
-      font-size: 1.15rem;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.45);
-    }
-
-    .token-role-pill {
-      position: absolute;
-      top: -6px;
-      right: -12px;
-      background: var(--navy-950);
-      color: #ffffff;
-      font-size: 0.6rem;
-      font-weight: 900;
-      padding: 1px 5px;
-      border-radius: 5px;
-      border: 1px solid rgba(255,255,255,0.4);
-      letter-spacing: 0.3px;
-    }
-
-    .token-min-pill {
-      position: absolute;
-      bottom: -5px;
-      left: -10px;
-      background: #fef08a;
-      color: #0f172a;
-      font-size: 0.62rem;
-      font-weight: 900;
-      padding: 1px 4px;
-      border-radius: 4px;
-      border: 1.5px solid var(--navy-950);
-    }
-
-    .token-card-flag {
-      position: absolute;
-      top: -6px;
-      left: -8px;
-      font-size: 0.75rem;
-    }
-
-    .token-label {
-      margin-top: 4px;
-      background: rgba(6, 16, 30, 0.92);
-      color: #ffffff;
-      font-size: 0.74rem;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 5px;
-      border: 1px solid rgba(255,255,255,0.25);
-      max-width: 72px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-align: center;
-    }
-
-    .touchline-actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .btn-touch {
-      min-height: 52px;
-      border: 2px solid var(--text-main);
-      border-radius: 12px;
-      font-size: 0.95rem;
-      font-weight: 900;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 8px 12px;
-      box-shadow: 0 2px 0 rgba(15, 23, 42, 0.15);
-    }
-    .btn-touch:active { transform: translateY(1px); }
+    .pitch-token { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 10; width: 68px; }
+    .pitch-token.selected .token-disc { outline: 4px solid #facc15; transform: scale(1.12); }
+    .token-disc { width: 48px; height: 48px; border-radius: 50%; background: var(--sky-token); border: 3px solid var(--navy-950); color: var(--navy-950); font-size: 1.15rem; font-weight: 900; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 3px 6px rgba(0,0,0,0.45); }
+    .token-role-pill { position: absolute; top: -6px; right: -12px; background: var(--navy-950); color: #fff; font-size: 0.6rem; font-weight: 900; padding: 1px 5px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.4); }
+    .token-min-pill { position: absolute; bottom: -5px; left: -10px; background: #fef08a; color: #0f172a; font-size: 0.62rem; font-weight: 900; padding: 1px 4px; border-radius: 4px; border: 1.5px solid var(--navy-950); }
+    .token-card-flag { position: absolute; top: -6px; left: -8px; font-size: 0.75rem; }
+    .token-label { margin-top: 4px; background: rgba(6,16,30,0.92); color: #fff; font-size: 0.74rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.25); max-width: 72px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+    .touchline-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+    .btn-touch { min-height: 52px; border: 2px solid var(--text-main); border-radius: 12px; font-size: 0.95rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; box-shadow: 0 2px 0 rgba(15,23,42,0.15); }
     .btn-touch.goal-us { background: #dcfce7; color: #14532d; border-color: #15803d; }
     .btn-touch.goal-them { background: #fee2e2; color: #7f1d1d; border-color: #b91c1c; }
     .btn-touch.sub-btn { background: var(--sky-token); color: var(--navy-950); }
     .btn-touch.card-btn { background: #fef3c7; color: #78350f; border-color: #d97706; }
-    .btn-touch.undo-btn {
-      grid-column: span 2;
-      background: #e2e8f0;
-      color: var(--text-main);
-      min-height: 48px;
-    }
-
-    .info-banner {
-      background: #e0f2fe;
-      border: 2px solid #0284c7;
-      color: #0369a1;
-      font-size: 0.82rem;
-      font-weight: 800;
-      padding: 10px 12px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      text-align: center;
-    }
-
-    .bench-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-
-    .bench-card {
-      background: #f8fafc;
-      border: 2px solid var(--text-main);
-      border-radius: 10px;
-      padding: 8px 10px;
-      min-height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-    }
-    .bench-card.selected {
-      background: #fef9c3;
-      border-color: #ca8a04;
-      outline: 3px solid #facc15;
-    }
-
-    .bench-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      overflow: hidden;
-    }
-
-    .num-circle {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--sky-token);
-      border: 2px solid var(--navy-950);
-      color: var(--navy-950);
-      font-weight: 900;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .bench-name {
-      font-weight: 800;
-      font-size: 0.9rem;
-      color: var(--text-main);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .mins-tag {
-      background: var(--navy-900);
-      color: #ffffff;
-      font-size: 0.72rem;
-      font-weight: 900;
-      padding: 3px 7px;
-      border-radius: 6px;
-      flex-shrink: 0;
-    }
-
-    .form-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 10px;
-    }
-
-    .field-label {
-      font-size: 0.72rem;
-      font-weight: 900;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      letter-spacing: 0.4px;
-    }
-
-    .day-input, .day-select {
-      min-height: var(--touch-min);
-      background: #ffffff;
-      border: 2px solid var(--text-main);
-      border-radius: 10px;
-      padding: 0 12px;
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--text-main);
-      width: 100%;
-    }
-
-    .segmented-toggle {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: #e2e8f0;
-      border: 2px solid var(--text-main);
-      border-radius: 10px;
-      padding: 3px;
-      min-height: var(--touch-min);
-    }
-
-    .seg-btn {
-      border: none;
-      background: transparent;
-      font-weight: 900;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      border-radius: 7px;
-      cursor: pointer;
-    }
-    .seg-btn.active {
-      background: var(--navy-900);
-      color: #ffffff;
-    }
-
-    .lineup-btn-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .btn-sky {
-      min-height: var(--touch-min);
-      background: var(--sky-token);
-      border: 2px solid var(--text-main);
-      border-radius: 10px;
-      font-weight: 900;
-      font-size: 0.95rem;
-      color: var(--navy-950);
-      cursor: pointer;
-      padding: 0 14px;
-    }
-
-    .btn-outline {
-      min-height: var(--touch-min);
-      background: #f1f5f9;
-      border: 2px solid var(--text-main);
-      border-radius: 10px;
-      font-weight: 800;
-      font-size: 0.88rem;
-      color: var(--text-main);
-      cursor: pointer;
-      padding: 0 14px;
-    }
-
-    .subtab-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .subtab-btn {
-      min-height: var(--touch-min);
-      border: 2px solid var(--text-main);
-      border-radius: 10px;
-      background: #e2e8f0;
-      color: var(--text-main);
-      font-weight: 900;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    .subtab-btn.active {
-      background: var(--navy-900);
-      color: #ffffff;
-    }
-
-    .roster-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      border: 2px solid #cbd5e1;
-      border-radius: 10px;
-      margin-bottom: 8px;
-      background: #ffffff;
-    }
-    .roster-row.unavailable {
-      opacity: 0.55;
-      background: #f1f5f9;
-    }
-
-    .roster-actions {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .btn-avail {
-      min-height: 40px;
-      padding: 0 10px;
-      border-radius: 8px;
-      font-weight: 800;
-      font-size: 0.78rem;
-      border: 2px solid var(--text-main);
-      cursor: pointer;
-    }
+    .btn-touch.undo-btn { grid-column: span 2; background: #e2e8f0; color: var(--text-main); min-height: 48px; }
+    .info-banner { background: #e0f2fe; border: 2px solid #0284c7; color: #0369a1; font-size: 0.82rem; font-weight: 800; padding: 10px 12px; border-radius: 12px; margin-bottom: 12px; text-align: center; }
+    .bench-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .bench-card { background: #f8fafc; border: 2px solid var(--text-main); border-radius: 10px; padding: 8px 10px; min-height: 52px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .bench-card.selected { background: #fef9c3; border-color: #ca8a04; outline: 3px solid #facc15; }
+    .bench-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+    .num-circle { width: 32px; height: 32px; border-radius: 50%; background: var(--sky-token); border: 2px solid var(--navy-950); color: var(--navy-950); font-weight: 900; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .bench-name { font-weight: 800; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mins-tag { background: var(--navy-900); color: #fff; font-size: 0.72rem; font-weight: 900; padding: 3px 7px; border-radius: 6px; flex-shrink: 0; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .field-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .field-label { font-size: 0.72rem; font-weight: 900; text-transform: uppercase; color: var(--text-muted); }
+    .day-input, .day-select { min-height: var(--touch-min); background: #fff; border: 2px solid var(--text-main); border-radius: 10px; padding: 0 12px; font-size: 0.95rem; font-weight: 800; color: var(--text-main); width: 100%; }
+    .segmented-toggle { display: grid; grid-template-columns: 1fr 1fr; background: #e2e8f0; border: 2px solid var(--text-main); border-radius: 10px; padding: 3px; min-height: var(--touch-min); }
+    .seg-btn { border: none; background: transparent; font-weight: 900; font-size: 0.85rem; color: var(--text-muted); border-radius: 7px; cursor: pointer; }
+    .seg-btn.active { background: var(--navy-900); color: #fff; }
+    .lineup-btn-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 6px; }
+    .btn-sky { min-height: var(--touch-min); background: var(--sky-token); border: 2px solid var(--text-main); border-radius: 10px; font-weight: 900; font-size: 0.95rem; color: var(--navy-950); cursor: pointer; padding: 0 14px; }
+    .btn-outline { min-height: var(--touch-min); background: #f1f5f9; border: 2px solid var(--text-main); border-radius: 10px; font-weight: 800; font-size: 0.88rem; color: var(--text-main); cursor: pointer; padding: 0 14px; }
+    .subtab-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .subtab-btn { min-height: var(--touch-min); border: 2px solid var(--text-main); border-radius: 10px; background: #e2e8f0; color: var(--text-main); font-weight: 900; font-size: 0.9rem; cursor: pointer; }
+    .subtab-btn.active { background: var(--navy-900); color: #fff; }
+    .roster-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 2px solid #cbd5e1; border-radius: 10px; margin-bottom: 8px; background: #fff; }
+    .roster-row.unavailable { opacity: 0.55; background: #f1f5f9; }
+    .roster-actions { display: flex; gap: 6px; align-items: center; }
+    .btn-avail { min-height: 40px; padding: 0 10px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; border: 2px solid var(--text-main); cursor: pointer; }
     .btn-avail.yes { background: #dcfce7; color: #14532d; }
     .btn-avail.no { background: #fee2e2; color: #7f1d1d; }
-
-    .btn-icon-sq {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 2px solid var(--text-main);
-      background: #f8fafc;
-      font-size: 0.95rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .stats-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-    }
-    .stats-table th {
-      background: var(--navy-900);
-      color: #ffffff;
-      padding: 9px 6px;
-      text-align: left;
-      font-weight: 900;
-    }
-    .stats-table td {
-      padding: 9px 6px;
-      border-bottom: 1.5px solid #cbd5e1;
-      font-weight: 700;
-      color: var(--text-main);
-    }
+    .btn-icon-sq { width: 40px; height: 40px; border-radius: 8px; border: 2px solid var(--text-main); background: #f8fafc; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .stats-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .stats-table th { background: var(--navy-900); color: #fff; padding: 9px 5px; text-align: left; font-weight: 900; }
+    .stats-table td { padding: 9px 5px; border-bottom: 1.5px solid #cbd5e1; font-weight: 700; }
     .stats-table tr:nth-child(even) { background: #f8fafc; }
-
-    .timeline-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 10px;
-      background: #f8fafc;
-      border-left: 4px solid var(--navy-900);
-      border-radius: 6px;
-      margin-bottom: 6px;
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-
-    /* FIXED BOTTOM NAVIGATION BAR */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 66px;
-      background: var(--navy-900);
-      border-top: 2px solid var(--navy-700);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      z-index: 9999;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    .nav-tab {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      font-size: 0.72rem;
-      font-weight: 800;
-      cursor: pointer;
-      position: relative;
-      touch-action: manipulation;
-    }
-    .nav-tab svg {
-      width: 22px;
-      height: 22px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2.2;
-      pointer-events: none;
-    }
-    .nav-tab span {
-      pointer-events: none;
-    }
-    .nav-tab.active {
-      color: var(--sky-token);
-      background: rgba(114, 194, 235, 0.12);
-    }
-    .nav-tab.active::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 15%;
-      right: 15%;
-      height: 3px;
-      background: var(--sky-token);
-      border-radius: 0 0 4px 4px;
-    }
-
-    /* MODALS */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(6, 16, 30, 0.75);
-      z-index: 10000;
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-    }
+    .timeline-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-left: 4px solid var(--navy-900); border-radius: 6px; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 66px; background: var(--navy-900); border-top: 2px solid var(--navy-700); display: grid; grid-template-columns: repeat(4, 1fr); z-index: 9999; padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .nav-tab { background: transparent; border: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 0.72rem; font-weight: 800; cursor: pointer; position: relative; }
+    .nav-tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.2; pointer-events: none; }
+    .nav-tab span { pointer-events: none; }
+    .nav-tab.active { color: var(--sky-token); background: rgba(114,194,235,0.12); }
+    .nav-tab.active::before { content: ""; position: absolute; top: 0; left: 15%; right: 15%; height: 3px; background: var(--sky-token); border-radius: 0 0 4px 4px; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(6,16,30,0.75); z-index: 10000; display: none; align-items: flex-end; justify-content: center; }
     .modal-backdrop.open { display: flex; }
-
-    .modal-sheet {
-      background: #ffffff;
-      color: var(--text-main);
-      width: 100%;
-      max-width: 600px;
-      border-radius: 20px 20px 0 0;
-      border-top: 4px solid var(--navy-900);
-      padding: 16px;
-      max-height: 88vh;
-      overflow-y: auto;
-    }
-
-    .sheet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 10px;
-      margin-bottom: 12px;
-      border-bottom: 2px solid #e2e8f0;
-    }
-
-    .sheet-title {
-      font-size: 1.05rem;
-      font-weight: 900;
-    }
-
-    .btn-close {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid var(--text-main);
-      background: #f1f5f9;
-      font-weight: 900;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    .report-pre {
-      background: #0f172a;
-      color: #f8fafc;
-      padding: 12px;
-      border-radius: 10px;
-      font-family: monospace;
-      font-size: 0.8rem;
-      white-space: pre-wrap;
-      margin-bottom: 12px;
-      max-height: 220px;
-      overflow-y: auto;
-    }
-
-    .past-player-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      align-items: center;
-      padding: 8px;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 8px;
-      margin-bottom: 6px;
-      background: #f8fafc;
-    }
-
-    .mini-num-input {
-      width: 48px;
-      height: 38px;
-      border: 2px solid var(--text-main);
-      border-radius: 6px;
-      text-align: center;
-      font-weight: 800;
-      font-size: 0.85rem;
-    }
+    .modal-sheet { background: #fff; color: var(--text-main); width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; border-top: 4px solid var(--navy-900); padding: 16px; max-height: 88vh; overflow-y: auto; }
+    .sheet-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; }
+    .sheet-title { font-size: 1.05rem; font-weight: 900; }
+    .btn-close { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--text-main); background: #f1f5f9; font-weight: 900; font-size: 1rem; cursor: pointer; }
+    .report-pre { background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; margin-bottom: 12px; max-height: 220px; overflow-y: auto; }
+    .past-player-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 8px; border: 1.5px solid #cbd5e1; border-radius: 8px; margin-bottom: 6px; background: #f8fafc; }
+    .mini-num-input { width: 46px; height: 38px; border: 2px solid var(--text-main); border-radius: 6px; text-align: center; font-weight: 800; font-size: 0.85rem; }
   </style>
 </head>
 <body>
 
-  <!-- STICKY HEADER SCOREBOARD -->
   <header class="top-cockpit">
     <div class="app-bar">
-      <div class="brand-logo">
-        <span class="brand-dot"></span>
-        <span>MATCHDAY <small style="font-size:0.65rem; color:#72c2eb;">v4.3</small></span>
-      </div>
+      <div class="brand-logo"><span class="brand-dot"></span><span>MATCHDAY <small style="font-size:0.65rem;color:#72c2eb;">v5.0</small></span></div>
       <div class="header-pills">
-        <button class="status-pill" onclick="forceCloudPull()" title="Tap to force cloud sync">
-          <span class="dot-indicator active" id="cloud-dot"></span>
-          <span id="cloud-text">Cloud Sync</span>
-        </button>
-        <button class="status-pill" id="wakelock-btn" onclick="toggleWakeLock()">
-          <span class="dot-indicator active" id="wake-dot"></span>
-          <span id="wake-text">Screen Lock: Auto</span>
-        </button>
+        <button class="status-pill" onclick="forceCloudPull()"><span class="dot-indicator active" id="cloud-dot"></span><span id="cloud-text">Cloud Sync</span></button>
+        <button class="status-pill" onclick="toggleWakeLock()"><span class="dot-indicator active" id="wake-dot"></span><span id="wake-text">Screen Lock: Auto</span></button>
       </div>
     </div>
-
     <div class="scoreboard-row">
-      <div class="score-team-col home">
-        <span class="venue-pill them" id="badge-left">HOME</span>
-        <div class="score-team-name" id="team-left">Maidenhead Utd Galaxy</div>
-      </div>
-
+      <div class="score-team-col home"><span class="venue-pill them" id="badge-left">HOME</span><div class="score-team-name" id="team-left">Maidenhead Utd Galaxy</div></div>
       <div class="score-center-box" id="score-display">0 - 0</div>
-
-      <div class="score-team-col away">
-        <span class="venue-pill us" id="badge-right">AWAY (US)</span>
-        <div class="score-team-name" id="team-right">Woodley Utd Spitfires</div>
-      </div>
+      <div class="score-team-col away"><span class="venue-pill us" id="badge-right">AWAY (US)</span><div class="score-team-name" id="team-right">Woodley Utd Spitfires</div></div>
     </div>
-
     <div class="clock-controls-row">
       <div class="clock-left">
         <span class="period-pill" id="period-badge">PRE-MATCH</span>
-        <div>
-          <span class="match-timer" id="clock-text">00:00</span>
-          <span class="stoppage-badge" id="stoppage-text"></span>
-        </div>
+        <div><span class="match-timer" id="clock-text">00:00</span><span class="stoppage-badge" id="stoppage-text"></span></div>
       </div>
       <div class="clock-adjust-group">
         <button class="btn-adj" onclick="adjustClock(-60)">-1m</button>
         <button class="btn-adj" onclick="adjustClock(60)">+1m</button>
       </div>
     </div>
-
     <div class="primary-clock-bars" id="clock-buttons-container">
       <button class="btn-start-bar" onclick="startFirstHalf()">▶ Start 1st Half (40m)</button>
     </div>
   </header>
 
-  <!-- TAB 1: MATCH COCKPIT -->
+  <!-- TAB 1: MATCH -->
   <main id="view-match" class="view-section active">
     <div class="pitch-wrapper">
       <div class="pitch-board">
         <div class="pitch-overlay-badge left" id="match-formation-badge">4-3-3</div>
         <div class="pitch-overlay-badge right">Tap Player for Actions</div>
-
         <svg class="pitch-svg" viewBox="0 0 100 140" preserveAspectRatio="none">
           <rect x="3" y="3" width="94" height="134" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <line x1="3" y1="70" x2="97" y2="70" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <circle cx="50" cy="70" r="13" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
-          <circle cx="50" cy="70" r="1" fill="rgba(255,255,255,0.65)"/>
           <rect x="22" y="3" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <rect x="34" y="3" width="32" height="7" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <rect x="22" y="119" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <rect x="34" y="130" width="32" height="7" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
         </svg>
-
         <div id="match-pitch-tokens"></div>
       </div>
     </div>
-
     <div class="touchline-actions">
       <button class="btn-touch goal-us" onclick="openGoalModal()">⚽ Goal: Us</button>
       <button class="btn-touch goal-them" onclick="logOppositionGoal()">🥅 Goal: Them</button>
@@ -961,39 +178,24 @@
       <button class="btn-touch card-btn" onclick="openCardModal()">🟨 Log Card</button>
       <button class="btn-touch undo-btn" onclick="undoLastAction()">↩️ Undo Last Event</button>
     </div>
-
     <div class="day-card">
-      <div class="day-card-title">
-        <span>Bench Rotation (Tap to Sub On)</span>
-        <span style="font-size:0.75rem; color:var(--text-muted);" id="match-bench-count"></span>
-      </div>
+      <div class="day-card-title"><span>Bench Rotation (Tap to Sub On)</span><span style="font-size:0.75rem;color:var(--text-muted);" id="match-bench-count"></span></div>
       <div class="bench-list" id="match-bench-grid"></div>
     </div>
-
     <div class="day-card">
-      <div class="day-card-title">
-        <span>Live Match Timeline</span>
-      </div>
+      <div class="day-card-title"><span>Live Match Timeline</span></div>
       <div id="match-timeline-list"></div>
     </div>
   </main>
 
-  <!-- TAB 2: LINEUP & FORMATION -->
+  <!-- TAB 2: LINEUP -->
   <section id="view-lineup" class="view-section">
     <div class="day-card">
       <div class="day-card-title">Fixture & Formation</div>
-
       <div class="form-grid-2">
-        <div class="field-group">
-          <label class="field-label">My Team Name</label>
-          <input type="text" id="input-my-team" class="day-input" value="Woodley Utd Spitfires" onchange="saveSetupConfig()">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Opposition</label>
-          <input type="text" id="input-opp-team" class="day-input" value="Maidenhead Utd Galaxy" onchange="saveSetupConfig()">
-        </div>
+        <div class="field-group"><label class="field-label">My Team Name</label><input type="text" id="input-my-team" class="day-input" value="Woodley Utd Spitfires" onchange="saveSetupConfig()"></div>
+        <div class="field-group"><label class="field-label">Opposition</label><input type="text" id="input-opp-team" class="day-input" value="Maidenhead Utd Galaxy" onchange="saveSetupConfig()"></div>
       </div>
-
       <div class="form-grid-2">
         <div class="field-group">
           <label class="field-label">Venue (Home = Left)</label>
@@ -1002,12 +204,8 @@
             <button type="button" class="seg-btn active" id="seg-away" onclick="setVenue('away')">AWAY</button>
           </div>
         </div>
-        <div class="field-group">
-          <label class="field-label">Half Mins</label>
-          <input type="number" id="input-half-mins" class="day-input" value="40" min="5" max="60" onchange="saveSetupConfig()">
-        </div>
+        <div class="field-group"><label class="field-label">Half Mins</label><input type="number" id="input-half-mins" class="day-input" value="40" min="5" max="60" onchange="saveSetupConfig()"></div>
       </div>
-
       <div class="field-group">
         <label class="field-label">Tactical Formation</label>
         <select id="select-formation" class="day-select" onchange="changeFormation(this.value)">
@@ -1019,22 +217,16 @@
           <option value="5-3-2">5-3-2 (Low Block)</option>
         </select>
       </div>
-
       <div class="lineup-btn-row">
         <button class="btn-sky" onclick="autoFillStartingXI()">⚡ Auto-Fill XI</button>
         <button class="btn-outline" onclick="resetMatchSheet()">🔄 Reset Match</button>
       </div>
     </div>
-
-    <div class="info-banner" id="swap-helper-banner">
-      Tap any two players (pitch or bench) to swap positions.
-    </div>
-
+    <div class="info-banner" id="swap-helper-banner">Tap any two players (pitch or bench) to swap positions.</div>
     <div class="pitch-wrapper">
       <div class="pitch-board">
         <div class="pitch-overlay-badge left" id="lineup-formation-badge">4-3-3</div>
         <div class="pitch-overlay-badge right">Starting XI</div>
-
         <svg class="pitch-svg" viewBox="0 0 100 140" preserveAspectRatio="none">
           <rect x="3" y="3" width="94" height="134" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <line x1="3" y1="70" x2="97" y2="70" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
@@ -1044,15 +236,11 @@
           <rect x="22" y="119" width="56" height="18" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
           <rect x="34" y="130" width="32" height="7" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="0.8"/>
         </svg>
-
         <div id="lineup-pitch-tokens"></div>
       </div>
     </div>
-
     <div class="day-card">
-      <div class="day-card-title">
-        <span>Available Substitutes (Tap to Swap)</span>
-      </div>
+      <div class="day-card-title"><span>Available Substitutes (Tap to Swap)</span></div>
       <div class="bench-list" id="lineup-bench-grid"></div>
     </div>
   </section>
@@ -1063,44 +251,30 @@
       <button class="subtab-btn active" id="btn-sub-roster" onclick="switchSquadSubtab('roster')">👥 Squad Roster</button>
       <button class="subtab-btn" id="btn-sub-stats" onclick="switchSquadSubtab('stats')">📊 Season Stats</button>
     </div>
-
     <div id="squad-roster-pane">
       <div class="day-card">
         <div class="day-card-title">Add New Player</div>
-        <div style="display:grid; grid-template-columns: 76px 1fr auto; gap:8px;">
+        <div style="display:grid;grid-template-columns:76px 1fr auto;gap:8px;">
           <input type="number" id="new-player-num" class="day-input" placeholder="#">
           <input type="text" id="new-player-name" class="day-input" placeholder="First Name">
           <button class="btn-sky" onclick="addNewPlayer()">+ Add</button>
         </div>
       </div>
-
       <div class="day-card">
-        <div class="day-card-title">
-          <span>Active Squad List</span>
-          <span id="squad-count-label" style="font-size:0.78rem; color:var(--text-muted);"></span>
-        </div>
+        <div class="day-card-title"><span>Active Squad List</span><span id="squad-count-label" style="font-size:0.78rem;color:var(--text-muted);"></span></div>
         <div id="squad-roster-list"></div>
       </div>
     </div>
-
     <div id="squad-stats-pane" style="display:none;">
       <div class="day-card">
         <div class="day-card-title">
           <span>Cumulative Season Totals</span>
-          <span style="font-size:0.72rem; color:var(--text-muted);">Apps (Start/Sub)</span>
+          <span style="font-size:0.72rem;color:var(--text-muted);">Tap ✏️ to adjust stats</span>
         </div>
         <div style="overflow-x:auto;">
           <table class="stats-table">
             <thead>
-              <tr>
-                <th>#</th>
-                <th>Player</th>
-                <th>Apps (S/Sub)</th>
-                <th>Mins</th>
-                <th>⚽ G</th>
-                <th>🎯 A</th>
-                <th>🟨/🟥</th>
-              </tr>
+              <tr><th>#</th><th>Player</th><th>Apps (S/Sub)</th><th>Mins</th><th>⚽</th><th>🎯</th><th>🟨/🟥</th><th>Edit</th></tr>
             </thead>
             <tbody id="season-stats-tbody"></tbody>
           </table>
@@ -1114,54 +288,41 @@
     <div class="day-card">
       <div class="day-card-title">
         <span>Finished Match Archive</span>
-        <button class="btn-sky" style="min-height:40px; padding:0 12px; font-size:0.8rem;" onclick="openManualMatchModal()">+ Log Past Match</button>
+        <button class="btn-sky" style="min-height:40px;padding:0 12px;font-size:0.8rem;" onclick="openManualMatchModal()">+ Log Past Match</button>
       </div>
-
-      <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1.5px dashed #cbd5e1;">
-        <button class="btn-start-bar" style="width:100%; font-size:0.85rem; min-height:44px;" onclick="rebuildMatchFromSeasonStats()">
-          🔄 Rebuild Today's Match Report from Season Stats
+      <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1.5px dashed #cbd5e1;">
+        <button class="btn-start-bar" style="width:100%;font-size:0.85rem;min-height:44px;" onclick="rebuildMatchFromSeasonStats()">
+          🔄 Rebuild Match Report from Season Stats
         </button>
       </div>
-
-      <div id="history-archive-list">
-        <div style="text-align:center; color:#475569; padding:12px; font-weight:700;">
-          No archived matches yet. Tap the green button above to restore today's match report from your Season Stats, or tap "+ Log Past Match" to add earlier games!
-        </div>
-      </div>
+      <div id="history-archive-list"></div>
     </div>
   </section>
 
-  <!-- FIXED BOTTOM NAVIGATION BAR (WITH DATA-TARGET ATTRIBUTES) -->
-  <nav class="bottom-nav" id="main-bottom-nav">
-    <button type="button" class="nav-tab active" data-target="view-match" onclick="window.switchMainTab('view-match', this)">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>
-      <span>Match</span>
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button type="button" class="nav-tab active" onclick="switchMainTab('view-match', this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg><span>Match</span>
     </button>
-    <button type="button" class="nav-tab" data-target="view-lineup" onclick="window.switchMainTab('view-lineup', this)">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="3"/></svg>
-      <span>Lineup</span>
+    <button type="button" class="nav-tab" onclick="switchMainTab('view-lineup', this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="3"/></svg><span>Lineup</span>
     </button>
-    <button type="button" class="nav-tab" data-target="view-squad" onclick="window.switchMainTab('view-squad', this)">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span>Squad & Season</span>
+    <button type="button" class="nav-tab" onclick="switchMainTab('view-squad', this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Squad & Season</span>
     </button>
-    <button type="button" class="nav-tab" data-target="view-history" onclick="window.switchMainTab('view-history', this)">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span>History</span>
+    <button type="button" class="nav-tab" onclick="switchMainTab('view-history', this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>History</span>
     </button>
   </nav>
 
   <!-- MODALS -->
   <div class="modal-backdrop" id="modal-player-action">
     <div class="modal-sheet">
-      <div class="sheet-header">
-        <div class="sheet-title" id="pa-modal-title">Player Actions</div>
-        <button class="btn-close" onclick="closeModal('modal-player-action')">✕</button>
-      </div>
-      <div style="display:grid; gap:10px;">
+      <div class="sheet-header"><div class="sheet-title" id="pa-modal-title">Player Actions</div><button class="btn-close" onclick="closeModal('modal-player-action')">✕</button></div>
+      <div style="display:grid;gap:10px;">
         <button class="btn-touch goal-us" id="pa-btn-goal">⚽ Scored a Goal</button>
         <button class="btn-touch sub-btn" id="pa-btn-sub">🔄 Substitute Off</button>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <button class="btn-touch card-btn" id="pa-btn-yc">🟨 Yellow Card</button>
           <button class="btn-touch goal-them" id="pa-btn-rc">🟥 Red Card</button>
         </div>
@@ -1171,51 +332,27 @@
 
   <div class="modal-backdrop" id="modal-goal">
     <div class="modal-sheet">
-      <div class="sheet-header">
-        <div class="sheet-title">⚽ Log Goal (Our Team)</div>
-        <button class="btn-close" onclick="closeModal('modal-goal')">✕</button>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Goal Scorer</label>
-        <select id="goal-scorer-id" class="day-select"></select>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Assist Provided By (Optional)</label>
-        <select id="goal-assist-id" class="day-select"></select>
-      </div>
-      <button class="btn-start-bar" style="width:100%; margin-top:8px;" onclick="confirmOurGoal()">✅ Confirm Goal</button>
+      <div class="sheet-header"><div class="sheet-title">⚽ Log Goal (Our Team)</div><button class="btn-close" onclick="closeModal('modal-goal')">✕</button></div>
+      <div class="field-group"><label class="field-label">Goal Scorer</label><select id="goal-scorer-id" class="day-select"></select></div>
+      <div class="field-group"><label class="field-label">Assist Provided By (Optional)</label><select id="goal-assist-id" class="day-select"></select></div>
+      <button class="btn-start-bar" style="width:100%;margin-top:8px;" onclick="confirmOurGoal()">✅ Confirm Goal</button>
     </div>
   </div>
 
   <div class="modal-backdrop" id="modal-sub">
     <div class="modal-sheet">
-      <div class="sheet-header">
-        <div class="sheet-title">🔄 Rolling Substitution</div>
-        <button class="btn-close" onclick="closeModal('modal-sub')">✕</button>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Player Coming OFF (On Pitch)</label>
-        <select id="sub-off-id" class="day-select"></select>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Player Coming ON (Bench — Sorted by Mins Played)</label>
-        <select id="sub-on-id" class="day-select"></select>
-      </div>
-      <button class="btn-sky" style="width:100%; margin-top:8px;" onclick="confirmRollingSub()">🔄 Make Substitution</button>
+      <div class="sheet-header"><div class="sheet-title">🔄 Rolling Substitution</div><button class="btn-close" onclick="closeModal('modal-sub')">✕</button></div>
+      <div class="field-group"><label class="field-label">Player Coming OFF (On Pitch)</label><select id="sub-off-id" class="day-select"></select></div>
+      <div class="field-group"><label class="field-label">Player Coming ON (Bench — Sorted by Mins)</label><select id="sub-on-id" class="day-select"></select></div>
+      <button class="btn-sky" style="width:100%;margin-top:8px;" onclick="confirmRollingSub()">🔄 Make Substitution</button>
     </div>
   </div>
 
   <div class="modal-backdrop" id="modal-card">
     <div class="modal-sheet">
-      <div class="sheet-header">
-        <div class="sheet-title">🟨 Log Disciplinary Card</div>
-        <button class="btn-close" onclick="closeModal('modal-card')">✕</button>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Select Player</label>
-        <select id="card-player-id" class="day-select"></select>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+      <div class="sheet-header"><div class="sheet-title">🟨 Log Disciplinary Card</div><button class="btn-close" onclick="closeModal('modal-card')">✕</button></div>
+      <div class="field-group"><label class="field-label">Select Player</label><select id="card-player-id" class="day-select"></select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
         <button class="btn-touch card-btn" onclick="confirmCard('yellow')">🟨 Yellow Card</button>
         <button class="btn-touch goal-them" onclick="confirmCard('red')">🟥 Red Card</button>
       </div>
@@ -1224,12 +361,9 @@
 
   <div class="modal-backdrop" id="modal-report">
     <div class="modal-sheet">
-      <div class="sheet-header">
-        <div class="sheet-title">🏁 Match Report</div>
-        <button class="btn-close" onclick="closeModal('modal-report')">✕</button>
-      </div>
+      <div class="sheet-header"><div class="sheet-title">🏁 Match Report</div><button class="btn-close" onclick="closeModal('modal-report')">✕</button></div>
       <pre class="report-pre" id="report-preview-box"></pre>
-      <div style="display:grid; gap:8px;">
+      <div style="display:grid;gap:8px;">
         <button class="btn-start-bar" onclick="copyReportForWhatsApp()">📋 Copy for WhatsApp</button>
         <button class="btn-sky" onclick="nativeShareReport()">📤 Share Match Report</button>
       </div>
@@ -1238,91 +372,28 @@
 
   <div class="modal-backdrop" id="modal-past-match">
     <div class="modal-sheet">
-      <div class="sheet-header">
-        <div class="sheet-title">📝 Log Past Match Result</div>
-        <button class="btn-close" onclick="closeModal('modal-past-match')">✕</button>
-      </div>
-
+      <div class="sheet-header"><div class="sheet-title">📝 Log Past Match Result</div><button class="btn-close" onclick="closeModal('modal-past-match')">✕</button></div>
       <div class="form-grid-2">
-        <div class="field-group">
-          <label class="field-label">Match Date</label>
-          <input type="date" id="past-date" class="day-input">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Venue</label>
-          <select id="past-venue" class="day-select">
-            <option value="home">Home</option>
-            <option value="away">Away</option>
-          </select>
-        </div>
+        <div class="field-group"><label class="field-label">Match Date</label><input type="date" id="past-date" class="day-input"></div>
+        <div class="field-group"><label class="field-label">Venue</label><select id="past-venue" class="day-select"><option value="home">Home</option><option value="away">Away</option></select></div>
       </div>
-
-      <div class="field-group">
-        <label class="field-label">Opposition Team Name</label>
-        <input type="text" id="past-opp" class="day-input" placeholder="e.g. Maidenhead Utd Galaxy">
-      </div>
-
+      <div class="field-group"><label class="field-label">Opposition Team Name</label><input type="text" id="past-opp" class="day-input" placeholder="e.g. Maidenhead Utd Galaxy"></div>
       <div class="form-grid-2">
-        <div class="field-group">
-          <label class="field-label">Our Goals</label>
-          <input type="number" id="past-score-us" class="day-input" value="0" min="0">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Opposition Goals</label>
-          <input type="number" id="past-score-them" class="day-input" value="0" min="0">
-        </div>
+        <div class="field-group"><label class="field-label">Our Goals</label><input type="number" id="past-score-us" class="day-input" value="0" min="0"></div>
+        <div class="field-group"><label class="field-label">Opposition Goals</label><input type="number" id="past-score-them" class="day-input" value="0" min="0"></div>
       </div>
-
       <div class="field-group" style="margin-top:4px;">
-        <label style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:0.82rem; cursor:pointer;">
-          <input type="checkbox" id="past-update-season-chk" checked style="width:20px; height:20px;">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:0.82rem;cursor:pointer;">
+          <input type="checkbox" id="past-update-season-chk" checked style="width:20px;height:20px;">
           <span>Add these minutes/goals to Season Stats table</span>
         </label>
       </div>
-
-      <div style="margin: 10px 0 6px; font-size:0.78rem; font-weight:900; text-transform:uppercase;">
-        Player Participation (Role | Mins | ⚽G | 🎯A)
-      </div>
-      <div id="past-players-container" style="max-height:220px; overflow-y:auto; margin-bottom:12px;"></div>
-
+      <div style="margin:10px 0 6px;font-size:0.78rem;font-weight:900;text-transform:uppercase;">Player Participation (Role | Mins | ⚽G | 🎯A)</div>
+      <div id="past-players-container" style="max-height:220px;overflow-y:auto;margin-bottom:12px;"></div>
       <button class="btn-start-bar" style="width:100%;" onclick="savePastMatchResult()">💾 Save Result</button>
     </div>
   </div>
 
-  <!-- STANDALONE NAVIGATION SCRIPT (ALWAYS RUNS EVEN IF truncated LATER) -->
-  <script>
-    window.switchMainTab = function(viewId, btn) {
-      document.querySelectorAll(".view-section").forEach(function(s) {
-        s.classList.remove("active");
-      });
-      document.querySelectorAll(".nav-tab").forEach(function(b) {
-        b.classList.remove("active");
-      });
-      var targetEl = document.getElementById(viewId);
-      if (targetEl) targetEl.classList.add("active");
-      if (btn) {
-        btn.classList.add("active");
-      } else {
-        var matchingBtn = document.querySelector('.nav-tab[data-target="' + viewId + '"]');
-        if (matchingBtn) matchingBtn.classList.add("active");
-      }
-      if (typeof window.renderEverything === "function") {
-        window.renderEverything();
-      }
-    };
-
-    window.openModal = function(id) {
-      var el = document.getElementById(id);
-      if (el) el.classList.add("open");
-    };
-
-    window.closeModal = function(id) {
-      var el = document.getElementById(id);
-      if (el) el.classList.remove("open");
-    };
-  </script>
-
-  <!-- MAIN APPLICATION & FIREBASE ENGINE -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAw4i3nSXQwQBsv9jHGKjvCzLdcbgjModg",
@@ -1337,10 +408,7 @@
 
     const STORAGE_KEY = "matchday_spitfires_v4";
     const LEGACY_KEYS = ["spitfires_matchday_v3", "matchday_coaching_app_v2", "matchday_coaching_app_v1"];
-    let rtdb = null;
-    let selectedSwapTarget = null;
-    let activeReportText = "";
-    let wakeLockSentinel = null;
+    let rtdb = null, selectedSwapTarget = null, activeReportText = "", wakeLockSentinel = null;
 
     const INITIAL_SQUAD = [
       { id: "p1", name: "Aidan", num: 1, available: true },
@@ -1363,112 +431,66 @@
     ];
 
     const FORMATIONS = {
-      "4-3-3": [
-        { role: "GK", x: 50, y: 89 },
-        { role: "LB", x: 18, y: 71 }, { role: "LCB", x: 38, y: 74 }, { role: "RCB", x: 62, y: 74 }, { role: "RB", x: 82, y: 71 },
-        { role: "LCM", x: 28, y: 48 }, { role: "CM", x: 50, y: 53 }, { role: "RCM", x: 72, y: 48 },
-        { role: "LW", x: 20, y: 24 }, { role: "ST", x: 50, y: 18 }, { role: "RW", x: 80, y: 24 }
-      ],
-      "4-2-3-1": [
-        { role: "GK", x: 50, y: 89 },
-        { role: "LB", x: 18, y: 72 }, { role: "LCB", x: 38, y: 75 }, { role: "RCB", x: 62, y: 75 }, { role: "RB", x: 82, y: 72 },
-        { role: "LDM", x: 35, y: 56 }, { role: "RDM", x: 65, y: 56 },
-        { role: "LAM", x: 20, y: 36 }, { role: "CAM", x: 50, y: 36 }, { role: "RAM", x: 80, y: 36 },
-        { role: "ST", x: 50, y: 17 }
-      ],
-      "4-4-2": [
-        { role: "GK", x: 50, y: 89 },
-        { role: "LB", x: 18, y: 72 }, { role: "LCB", x: 38, y: 75 }, { role: "RCB", x: 62, y: 75 }, { role: "RB", x: 82, y: 72 },
-        { role: "LM", x: 18, y: 47 }, { role: "LCM", x: 38, y: 49 }, { role: "RCM", x: 62, y: 49 }, { role: "RM", x: 82, y: 47 },
-        { role: "LS", x: 36, y: 20 }, { role: "RS", x: 64, y: 20 }
-      ],
-      "3-5-2": [
-        { role: "GK", x: 50, y: 89 },
-        { role: "LCB", x: 26, y: 74 }, { role: "CB", x: 50, y: 76 }, { role: "RCB", x: 74, y: 74 },
-        { role: "LWB", x: 14, y: 48 }, { role: "LCM", x: 34, y: 50 }, { role: "CM", x: 50, y: 53 }, { role: "RCM", x: 66, y: 50 }, { role: "RWB", x: 86, y: 48 },
-        { role: "LS", x: 36, y: 20 }, { role: "RS", x: 64, y: 20 }
-      ],
-      "3-4-3": [
-        { role: "GK", x: 50, y: 89 },
-        { role: "LCB", x: 26, y: 74 }, { role: "CB", x: 50, y: 76 }, { role: "RCB", x: 74, y: 74 },
-        { role: "LM", x: 16, y: 49 }, { role: "LCM", x: 38, y: 51 }, { role: "RCM", x: 62, y: 51 }, { role: "RM", x: 84, y: 49 },
-        { role: "LW", x: 20, y: 23 }, { role: "ST", x: 50, y: 17 }, { role: "RW", x: 80, y: 23 }
-      ],
-      "5-3-2": [
-        { role: "GK", x: 50, y: 89 },
-        { role: "LWB", x: 14, y: 68 }, { role: "LCB", x: 32, y: 75 }, { role: "CB", x: 50, y: 77 }, { role: "RCB", x: 68, y: 75 }, { role: "RWB", x: 86, y: 68 },
-        { role: "LCM", x: 30, y: 47 }, { role: "CM", x: 50, y: 50 }, { role: "RCM", x: 70, y: 47 },
-        { role: "LS", x: 36, y: 20 }, { role: "RS", x: 64, y: 20 }
-      ]
+      "4-3-3": [{role:"GK",x:50,y:89},{role:"LB",x:18,y:71},{role:"LCB",x:38,y:74},{role:"RCB",x:62,y:74},{role:"RB",x:82,y:71},{role:"LCM",x:28,y:48},{role:"CM",x:50,y:53},{role:"RCM",x:72,y:48},{role:"LW",x:20,y:24},{role:"ST",x:50,y:18},{role:"RW",x:80,y:24}],
+      "4-2-3-1": [{role:"GK",x:50,y:89},{role:"LB",x:18,y:72},{role:"LCB",x:38,y:75},{role:"RCB",x:62,y:75},{role:"RB",x:82,y:72},{role:"LDM",x:35,y:56},{role:"RDM",x:65,y:56},{role:"LAM",x:20,y:36},{role:"CAM",x:50,y:36},{role:"RAM",x:80,y:36},{role:"ST",x:50,y:17}],
+      "4-4-2": [{role:"GK",x:50,y:89},{role:"LB",x:18,y:72},{role:"LCB",x:38,y:75},{role:"RCB",x:62,y:75},{role:"RB",x:82,y:72},{role:"LM",x:18,y:47},{role:"LCM",x:38,y:49},{role:"RCM",x:62,y:49},{role:"RM",x:82,y:47},{role:"LS",x:36,y:20},{role:"RS",x:64,y:20}],
+      "3-5-2": [{role:"GK",x:50,y:89},{role:"LCB",x:26,y:74},{role:"CB",x:50,y:76},{role:"RCB",x:74,y:74},{role:"LWB",x:14,y:48},{role:"LCM",x:34,y:50},{role:"CM",x:50,y:53},{role:"RCM",x:66,y:50},{role:"RWB",x:86,y:48},{role:"LS",x:36,y:20},{role:"RS",x:64,y:20}],
+      "3-4-3": [{role:"GK",x:50,y:89},{role:"LCB",x:26,y:74},{role:"CB",x:50,y:76},{role:"RCB",x:74,y:74},{role:"LM",x:16,y:49},{role:"LCM",x:38,y:51},{role:"RCM",x:62,y:51},{role:"RM",x:84,y:49},{role:"LW",x:20,y:23},{role:"ST",x:50,y:17},{role:"RW",x:80,y:23}],
+      "5-3-2": [{role:"GK",x:50,y:89},{role:"LWB",x:14,y:68},{role:"LCB",x:32,y:75},{role:"CB",x:50,y:77},{role:"RCB",x:68,y:75},{role:"RWB",x:86,y:68},{role:"LCM",x:30,y:47},{role:"CM",x:50,y:50},{role:"RCM",x:70,y:47},{role:"LS",x:36,y:20},{role:"RS",x:64,y:20}]
     };
 
+    // updatedAt is 0 by default so a fresh tab NEVER overwrites Firebase cloud data
     let state = {
-      setup: {
-        myTeam: "Woodley Utd Spitfires",
-        oppTeam: "Maidenhead Utd Galaxy",
-        venue: "away",
-        halfDuration: 40,
-        formation: "4-3-3"
-      },
+      setup: { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3" },
       squad: JSON.parse(JSON.stringify(INITIAL_SQUAD)),
-      match: {
-        status: "PRE",
-        running: false,
-        elapsedSec: 0,
-        lastTickAt: null,
-        scoreUs: 0,
-        scoreThem: 0,
-        lineupIds: ["p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11"],
-        starterIds: ["p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11"],
-        appearedIds: [],
-        playerSeconds: {},
-        cards: {},
-        timeline: []
-      },
+      match: { status: "PRE", running: false, elapsedSec: 0, lastTickAt: null, scoreUs: 0, scoreThem: 0, lineupIds: ["p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11"], starterIds: ["p1","p2","p3","p4","p5","p6","p7","p8","p9","p10","p11"], appearedIds: [], playerSeconds: {}, cards: {}, timeline: [] },
       seasonStats: {},
       history: [],
       undoStack: [],
-      updatedAt: Date.now()
+      updatedAt: 0
     };
 
-    function toArray(val) {
-      if (!val) return [];
-      if (Array.isArray(val)) return val;
-      if (typeof val === "object") return Object.values(val);
-      return [];
+    function toArray(v) { return !v ? [] : Array.isArray(v) ? v : typeof v === "object" ? Object.values(v) : []; }
+    function pad(n) { return n < 10 ? "0" + n : String(n); }
+    function openModal(id) { const el = document.getElementById(id); if (el) el.classList.add("open"); }
+    function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove("open"); }
+
+    function switchMainTab(viewId, btn) {
+      document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".nav-tab").forEach(b => b.classList.remove("active"));
+      const target = document.getElementById(viewId);
+      if (target) target.classList.add("active");
+      if (btn) btn.classList.add("active");
+      renderEverything();
     }
 
-    function normalizeHistoryItem(item, index) {
-      if (!item || typeof item !== "object") return null;
-      const id = item.id || ("match_rec_" + index + "_" + Date.now());
-      const date = item.date || new Date().toLocaleDateString("en-GB");
-      const header = item.header || (item.fixture ? `${item.fixture} (${item.score || ''})` : item.title || "Archived Match");
-      const report = item.report || item.summary || `⚽ MATCH REPORT\n${header}\n📅 Date: ${date}`;
-      return {
-        id: String(id),
-        date: String(date),
-        header: String(header),
-        report: String(report),
-        deltas: item.deltas || null
-      };
+    function normalizeHistoryItem(it, idx) {
+      if (!it || typeof it !== "object") return null;
+      const id = String(it.id || ("match_" + idx + "_" + Date.now()));
+      const date = String(it.date || new Date().toLocaleDateString("en-GB"));
+      const header = String(it.header || (it.fixture ? `${it.fixture} (${it.score || ''})` : "Archived Match"));
+      const report = String(it.report || `⚽ MATCH REPORT\n${header}\n📅 Date: ${date}`);
+      return { id, date, header, report, deltas: it.deltas || null };
     }
 
     function ensureSeasonStats() {
       if (!state.seasonStats || typeof state.seasonStats !== "object") state.seasonStats = {};
-      toArray(state.squad).forEach(p => {
+      state.squad.forEach(p => {
         if (!state.seasonStats[p.id]) {
           state.seasonStats[p.id] = { apps: 0, starts: 0, subs: 0, mins: 0, goals: 0, assists: 0, yellow: 0, red: 0 };
         }
       });
     }
 
-    function sanitizeFullState() {
-      if (!state.setup) {
-        state.setup = { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3" };
-      }
+    function hasStatsActivity(statsObj) {
+      if (!statsObj || typeof statsObj !== "object") return false;
+      return Object.values(statsObj).some(s => s && ((s.apps || 0) > 0 || (s.mins || 0) > 0 || (s.goals || 0) > 0));
+    }
+
+    function sanitizeState() {
+      if (!state.setup) state.setup = { myTeam: "Woodley Utd Spitfires", oppTeam: "Maidenhead Utd Galaxy", venue: "away", halfDuration: 40, formation: "4-3-3" };
       state.squad = toArray(state.squad);
       if (!state.squad.length) state.squad = JSON.parse(JSON.stringify(INITIAL_SQUAD));
-
       if (!state.match) state.match = {};
       state.match.lineupIds = toArray(state.match.lineupIds);
       if (!state.match.lineupIds.length) state.match.lineupIds = state.squad.slice(0, 11).map(p => p.id);
@@ -1477,52 +499,55 @@
       state.match.timeline = toArray(state.match.timeline);
       if (!state.match.playerSeconds || typeof state.match.playerSeconds !== "object") state.match.playerSeconds = {};
       if (!state.match.cards || typeof state.match.cards !== "object") state.match.cards = {};
-
-      state.history = toArray(state.history).map((it, idx) => normalizeHistoryItem(it, idx)).filter(Boolean);
+      state.history = toArray(state.history).map((it, i) => normalizeHistoryItem(it, i)).filter(Boolean);
       ensureSeasonStats();
     }
 
-    function recoverLegacyLocalHistory() {
-      sanitizeFullState();
-      const existingHeaders = new Set(state.history.map(h => h.header + "_" + h.date));
-
-      LEGACY_KEYS.forEach(k => {
-        try {
-          const raw = localStorage.getItem(k);
-          if (!raw) return;
-          const parsed = JSON.parse(raw);
-          const oldHist = toArray(parsed.history || parsed.matchHistory);
-          oldHist.forEach((h, i) => {
-            const norm = normalizeHistoryItem(h, i);
-            if (norm && !existingHeaders.has(norm.header + "_" + norm.date)) {
-              state.history.push(norm);
-              existingHeaders.add(norm.header + "_" + norm.date);
-            }
-          });
-        } catch (e) {}
-      });
+    function mergeExternalData(ext) {
+      if (!ext || typeof ext !== "object") return false;
+      let changed = false;
+      if (!hasStatsActivity(state.seasonStats) && hasStatsActivity(ext.seasonStats)) {
+        state.seasonStats = ext.seasonStats;
+        changed = true;
+      }
+      const extHist = toArray(ext.history || ext.matchHistory).map((it, i) => normalizeHistoryItem(it, i)).filter(Boolean);
+      if (extHist.length) {
+        const existing = new Set(state.history.map(h => h.header + "_" + h.date));
+        extHist.forEach(h => {
+          if (!existing.has(h.header + "_" + h.date)) {
+            state.history.push(h);
+            existing.add(h.header + "_" + h.date);
+            changed = true;
+          }
+        });
+      }
+      sanitizeState();
+      return changed;
     }
 
     function loadLocal() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          state = { ...state, ...parsed };
-        } catch (e) {}
+        try { state = { ...state, ...JSON.parse(raw) }; } catch (e) {}
       }
-      sanitizeFullState();
+      sanitizeState();
+      LEGACY_KEYS.forEach(k => {
+        try {
+          const r = localStorage.getItem(k);
+          if (r) mergeExternalData(JSON.parse(r));
+        } catch (e) {}
+      });
     }
 
     function persist(pushCloud = true) {
       state.updatedAt = Date.now();
-      sanitizeFullState();
+      sanitizeState();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       if (pushCloud && rtdb) {
         setCloudStatus("syncing");
-        const cleanCopy = JSON.parse(JSON.stringify(state));
-        delete cleanCopy.undoStack;
-        rtdb.ref("spitfires_state_v4").set(cleanCopy)
+        const copy = JSON.parse(JSON.stringify(state));
+        delete copy.undoStack;
+        rtdb.ref("spitfires_state_v4").set(copy)
           .then(() => setCloudStatus("online"))
           .catch(() => setCloudStatus("offline"));
       }
@@ -1530,70 +555,55 @@
 
     function initFirebaseSync() {
       try {
-        if (typeof firebase !== "undefined") {
-          firebase.initializeApp(firebaseConfig);
-          rtdb = firebase.database();
+        if (typeof firebase === "undefined") return;
+        firebase.initializeApp(firebaseConfig);
+        rtdb = firebase.database();
 
-          rtdb.ref(".info/connected").on("value", (snap) => {
-            setCloudStatus(snap.val() === true ? "online" : "offline");
-          });
+        rtdb.ref(".info/connected").on("value", snap => setCloudStatus(snap.val() === true ? "online" : "offline"));
 
-          rtdb.ref("matchday_data").once("value", (snap) => {
-            const oldRemote = snap.val();
-            if (oldRemote && oldRemote.history) {
-              const list = toArray(oldRemote.history);
-              sanitizeFullState();
-              const existing = new Set(state.history.map(h => h.header));
-              let added = false;
-              list.forEach((item, idx) => {
-                const norm = normalizeHistoryItem(item, idx);
-                if (norm && !existing.has(norm.header)) {
-                  state.history.push(norm);
-                  added = true;
-                }
-              });
-              if (added) {
-                persist(true);
-                renderHistoryView();
-              }
-            }
-          });
+        // Recover any stats or history from legacy Firebase node `matchday_data`
+        rtdb.ref("matchday_data").once("value", snap => {
+          if (mergeExternalData(snap.val())) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            renderEverything();
+          }
+        });
 
-          rtdb.ref("spitfires_state_v4").on("value", (snap) => {
-            const remote = snap.val();
-            if (remote && remote.updatedAt && remote.updatedAt > (state.updatedAt || 0)) {
-              const localUndo = state.undoStack || [];
-              const localHist = [...(state.history || [])];
-              state = { ...state, ...remote, undoStack: localUndo };
-              sanitizeFullState();
-              if (state.history.length === 0 && localHist.length > 0) {
-                state.history = localHist;
-              }
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-              window.renderEverything();
-            }
-          });
-        }
-      } catch (e) {
-        setCloudStatus("offline");
-      }
+        rtdb.ref("spitfires_state_v4").on("value", snap => {
+          const remote = snap.val();
+          if (!remote) return;
+          const localHist = [...state.history];
+          const localStats = JSON.parse(JSON.stringify(state.seasonStats));
+
+          if ((remote.updatedAt || 0) > (state.updatedAt || 0)) {
+            state = { ...state, ...remote, undoStack: state.undoStack || [] };
+            sanitizeState();
+            if (!state.history.length && localHist.length) state.history = localHist;
+            if (!hasStatsActivity(state.seasonStats) && hasStatsActivity(localStats)) state.seasonStats = localStats;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            renderEverything();
+          } else if (mergeExternalData(remote)) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            renderEverything();
+          }
+        });
+      } catch (e) { setCloudStatus("offline"); }
     }
 
     function forceCloudPull() {
       if (!rtdb) return;
       setCloudStatus("syncing");
-      rtdb.ref("spitfires_state_v4").once("value", (snap) => {
+      rtdb.ref("spitfires_state_v4").once("value", snap => {
         const remote = snap.val();
         if (remote) {
-          const backupHist = [...(state.history || [])];
+          const localHist = [...state.history];
+          const localStats = JSON.parse(JSON.stringify(state.seasonStats));
           state = { ...state, ...remote };
-          sanitizeFullState();
-          if (state.history.length === 0 && backupHist.length > 0) {
-            state.history = backupHist;
-          }
-          recoverLegacyLocalHistory();
+          sanitizeState();
+          if (!state.history.length && localHist.length) state.history = localHist;
+          if (!hasStatsActivity(state.seasonStats) && hasStatsActivity(localStats)) state.seasonStats = localStats;
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-          window.renderEverything();
+          renderEverything();
           alert("Cloud Sync Complete!");
         }
         setCloudStatus("online");
@@ -1601,18 +611,9 @@
     }
 
     function setCloudStatus(mode) {
-      const dot = document.getElementById("cloud-dot");
-      const txt = document.getElementById("cloud-text");
-      if (mode === "online") {
-        dot.className = "dot-indicator active";
-        txt.textContent = "Cloud Synced";
-      } else if (mode === "syncing") {
-        dot.className = "dot-indicator syncing";
-        txt.textContent = "Syncing...";
-      } else {
-        dot.className = "dot-indicator";
-        txt.textContent = "Offline Ready";
-      }
+      const dot = document.getElementById("cloud-dot"), txt = document.getElementById("cloud-text");
+      dot.className = "dot-indicator" + (mode === "online" ? " active" : mode === "syncing" ? " syncing" : "");
+      txt.textContent = mode === "online" ? "Cloud Synced" : mode === "syncing" ? "Syncing..." : "Offline Ready";
     }
 
     async function requestScreenWakeLock() {
@@ -1621,7 +622,7 @@
           wakeLockSentinel = await navigator.wakeLock.request("screen");
           document.getElementById("wake-dot").className = "dot-indicator active";
           document.getElementById("wake-text").textContent = "Screen Lock: Auto";
-        } catch (err) {}
+        } catch (e) {}
       }
     }
 
@@ -1631,9 +632,7 @@
         wakeLockSentinel = null;
         document.getElementById("wake-dot").className = "dot-indicator";
         document.getElementById("wake-text").textContent = "Screen Lock: Off";
-      } else {
-        requestScreenWakeLock();
-      }
+      } else requestScreenWakeLock();
     }
 
     function startSecondLoop() {
@@ -1655,145 +654,88 @@
       }, 1000);
     }
 
+    function getPlayerMatchMins(pid) { return Math.round(((state.match.playerSeconds && state.match.playerSeconds[pid]) || 0) / 60); }
+    function getCurrentMinuteStr() { return Math.max(1, Math.ceil((state.match.elapsedSec || 0) / 60)) + "'"; }
+
     function startFirstHalf() {
       pushUndo();
-      state.match.status = "1H";
-      state.match.running = true;
-      state.match.lastTickAt = Date.now();
+      state.match.status = "1H"; state.match.running = true; state.match.lastTickAt = Date.now();
       state.match.starterIds = [...state.match.lineupIds];
-      state.match.lineupIds.forEach(pid => {
-        if (!state.match.appearedIds.includes(pid)) state.match.appearedIds.push(pid);
-      });
+      state.match.lineupIds.forEach(pid => { if (!state.match.appearedIds.includes(pid)) state.match.appearedIds.push(pid); });
       state.match.timeline.unshift({ min: "1'", text: "⏱️ Kickoff — 1st Half Started", type: "period" });
-      persist();
-      window.renderEverything();
+      persist(); renderEverything();
     }
 
     function pauseResumeMatch() {
-      state.match.running = !state.match.running;
-      state.match.lastTickAt = Date.now();
-      persist();
-      renderTopScoreboard();
+      state.match.running = !state.match.running; state.match.lastTickAt = Date.now();
+      persist(); renderTopScoreboard();
     }
 
     function triggerHalfTime() {
       pushUndo();
-      state.match.running = false;
-      state.match.status = "HT";
-      state.match.elapsedSec = state.setup.halfDuration * 60;
+      state.match.running = false; state.match.status = "HT"; state.match.elapsedSec = state.setup.halfDuration * 60;
       state.match.timeline.unshift({ min: `${state.setup.halfDuration}'`, text: "⏸️ Half Time Whistle", type: "period" });
-      persist();
-      window.renderEverything();
+      persist(); renderEverything();
     }
 
     function startSecondHalf() {
       pushUndo();
-      state.match.status = "2H";
-      state.match.running = true;
-      state.match.lastTickAt = Date.now();
-      state.match.lineupIds.forEach(pid => {
-        if (!state.match.appearedIds.includes(pid)) state.match.appearedIds.push(pid);
-      });
+      state.match.status = "2H"; state.match.running = true; state.match.lastTickAt = Date.now();
+      state.match.lineupIds.forEach(pid => { if (!state.match.appearedIds.includes(pid)) state.match.appearedIds.push(pid); });
       state.match.timeline.unshift({ min: `${state.setup.halfDuration + 1}'`, text: "▶️ Kickoff — 2nd Half Started", type: "period" });
-      persist();
-      window.renderEverything();
+      persist(); renderEverything();
     }
 
     function triggerFullTime() {
       if (!confirm("Confirm Full Time? This will commit player minutes and stats to Season Totals and generate your Match Report.")) return;
-      state.match.running = false;
-      state.match.status = "FT";
+      state.match.running = false; state.match.status = "FT";
       const ftMin = Math.ceil(state.match.elapsedSec / 60) || (state.setup.halfDuration * 2);
       state.match.timeline.unshift({ min: `${ftMin}'`, text: "🏁 Full Time Whistle", type: "period" });
-
       commitMatchToSeasonAndArchive();
-      persist();
-      window.renderEverything();
-      if (state.history && state.history[0]) {
-        openReportModal(state.history[0].report);
-      }
+      persist(); renderEverything();
+      if (state.history[0]) openReportModal(state.history[0].report);
     }
 
     function adjustClock(secDelta) {
-      state.match.elapsedSec = Math.max(0, state.match.elapsedSec + secDelta);
-      persist();
-      renderTopScoreboard();
+      state.match.elapsedSec = Math.max(0, (state.match.elapsedSec || 0) + secDelta);
+      persist(); renderTopScoreboard();
     }
-
-    function getPlayerMatchMins(pid) {
-      return Math.round(((state.match.playerSeconds && state.match.playerSeconds[pid]) || 0) / 60);
-    }
-
-    function getCurrentMinuteStr() {
-      return Math.max(1, Math.ceil((state.match.elapsedSec || 0) / 60)) + "'";
-    }
-
-    function pad(n) { return n < 10 ? "0" + n : n; }
 
     function renderTopScoreboard() {
-      const s = state.setup;
-      const m = state.match;
-      const isHome = s.venue === "home";
-
+      const s = state.setup, m = state.match, isHome = s.venue === "home";
       document.getElementById("team-left").textContent = isHome ? s.myTeam : s.oppTeam;
       document.getElementById("team-right").textContent = isHome ? s.oppTeam : s.myTeam;
-
-      const bLeft = document.getElementById("badge-left");
-      const bRight = document.getElementById("badge-right");
-      bLeft.textContent = isHome ? "HOME (US)" : "HOME";
-      bLeft.className = "venue-pill " + (isHome ? "us" : "them");
-      bRight.textContent = !isHome ? "AWAY (US)" : "AWAY";
-      bRight.className = "venue-pill " + (!isHome ? "us" : "them");
-
-      const leftScore = isHome ? m.scoreUs : m.scoreThem;
-      const rightScore = isHome ? m.scoreThem : m.scoreUs;
-      document.getElementById("score-display").textContent = `${leftScore} -${rightScore}`;
+      const bLeft = document.getElementById("badge-left"), bRight = document.getElementById("badge-right");
+      bLeft.textContent = isHome ? "HOME (US)" : "HOME"; bLeft.className = "venue-pill " + (isHome ? "us" : "them");
+      bRight.textContent = !isHome ? "AWAY (US)" : "AWAY"; bRight.className = "venue-pill " + (!isHome ? "us" : "them");
+      document.getElementById("score-display").textContent = `${isHome ? m.scoreUs : m.scoreThem} - ${isHome ? m.scoreThem : m.scoreUs}`;
 
       const pBadge = document.getElementById("period-badge");
       pBadge.textContent = m.status === "PRE" ? "PRE-MATCH" : m.status === "1H" ? "1ST HALF" : m.status === "HT" ? "HALF TIME" : m.status === "2H" ? "2ND HALF" : "FULL TIME";
       pBadge.className = "period-pill" + (m.running ? " live" : "");
 
-      const halfSec = s.halfDuration * 60;
-      const regLimit = m.status === "1H" ? halfSec : m.status === "2H" ? halfSec * 2 : 0;
-
+      const halfSec = s.halfDuration * 60, regLimit = m.status === "1H" ? halfSec : m.status === "2H" ? halfSec * 2 : 0;
       if ((m.status === "1H" || m.status === "2H") && m.elapsedSec > regLimit) {
-        const stopMins = Math.ceil((m.elapsedSec - regLimit) / 60);
-        const baseMins = regLimit / 60;
-        document.getElementById("clock-text").textContent = `${pad(baseMins)}:00`;
-        document.getElementById("stoppage-text").textContent = `+${stopMins}'`;
+        document.getElementById("clock-text").textContent = `${pad(regLimit / 60)}:00`;
+        document.getElementById("stoppage-text").textContent = `+${Math.ceil((m.elapsedSec - regLimit) / 60)}'`;
       } else {
-        const mins = Math.floor((m.elapsedSec || 0) / 60);
-        const secs = (m.elapsedSec || 0) % 60;
-        document.getElementById("clock-text").textContent = `${pad(mins)}:${pad(secs)}`;
+        document.getElementById("clock-text").textContent = `${pad(Math.floor((m.elapsedSec || 0) / 60))}:${pad((m.elapsedSec || 0) % 60)}`;
         document.getElementById("stoppage-text").textContent = "";
       }
 
       const btnBox = document.getElementById("clock-buttons-container");
-      if (m.status === "PRE") {
-        btnBox.innerHTML = `<button class="btn-start-bar" onclick="startFirstHalf()">▶ Start 1st Half (${s.halfDuration}m)</button>`;
-      } else if (m.status === "1H") {
-        btnBox.innerHTML = `
-          <button class="btn-start-bar ${m.running ? 'amber' : ''}" onclick="pauseResumeMatch()">${m.running ? '⏸ Pause' : '▶ Resume'}</button>
-          <button class="btn-start-bar navy" onclick="triggerHalfTime()">⏱ Half Time</button>
-        `;
-      } else if (m.status === "HT") {
-        btnBox.innerHTML = `<button class="btn-start-bar" onclick="startSecondHalf()">▶ Start 2nd Half (${s.halfDuration}m)</button>`;
-      } else if (m.status === "2H") {
-        btnBox.innerHTML = `
-          <button class="btn-start-bar ${m.running ? 'amber' : ''}" onclick="pauseResumeMatch()">${m.running ? '⏸ Pause' : '▶ Resume'}</button>
-          <button class="btn-start-bar red" onclick="triggerFullTime()">🏁 Full Time</button>
-        `;
-      } else {
-        btnBox.innerHTML = `<button class="btn-start-bar navy" onclick="resetMatchSheet()">🔄 Start New Match Sheet</button>`;
-      }
+      if (m.status === "PRE") btnBox.innerHTML = `<button class="btn-start-bar" onclick="startFirstHalf()">▶ Start 1st Half (${s.halfDuration}m)</button>`;
+      else if (m.status === "1H") btnBox.innerHTML = `<button class="btn-start-bar ${m.running ? 'amber' : ''}" onclick="pauseResumeMatch()">${m.running ? '⏸ Pause' : '▶ Resume'}</button><button class="btn-start-bar navy" onclick="triggerHalfTime()">⏱ Half Time</button>`;
+      else if (m.status === "HT") btnBox.innerHTML = `<button class="btn-start-bar" onclick="startSecondHalf()">▶ Start 2nd Half (${s.halfDuration}m)</button>`;
+      else if (m.status === "2H") btnBox.innerHTML = `<button class="btn-start-bar ${m.running ? 'amber' : ''}" onclick="pauseResumeMatch()">${m.running ? '⏸ Pause' : '▶ Resume'}</button><button class="btn-start-bar red" onclick="triggerFullTime()">🏁 Full Time</button>`;
+      else btnBox.innerHTML = `<button class="btn-start-bar navy" onclick="resetMatchSheet()">🔄 Start New Match Sheet</button>`;
     }
 
     function renderMatchView() {
-      sanitizeFullState();
+      sanitizeState();
       const fName = state.setup.formation || "4-3-3";
       document.getElementById("match-formation-badge").textContent = fName;
       const coords = FORMATIONS[fName] || FORMATIONS["4-3-3"];
-
       const tokenContainer = document.getElementById("match-pitch-tokens");
       tokenContainer.innerHTML = "";
 
@@ -1806,59 +748,32 @@
 
         const el = document.createElement("div");
         el.className = "pitch-token";
-        el.style.left = slot.x + "%";
-        el.style.top = slot.y + "%";
+        el.style.left = slot.x + "%"; el.style.top = slot.y + "%";
         el.onclick = () => openQuickPlayerAction(player.id);
-
-        el.innerHTML = `
-          <div class="token-disc">
-            ${player.num}
-            <span class="token-role-pill">${slot.role}</span>
-            <span class="token-min-pill">${mins}'</span>${cardBadge ? `<span class="token-card-flag">${cardBadge}</span>` : ""}
-          </div>
-          <div class="token-label">${player.name}</div>
-        `;
+        el.innerHTML = `<div class="token-disc">${player.num}<span class="token-role-pill">${slot.role}</span><span class="token-min-pill">${mins}'</span>${cardBadge ? `<span class="token-card-flag">${cardBadge}</span>` : ""}</div><div class="token-label">${player.name}</div>`;
         tokenContainer.appendChild(el);
       });
 
-      const benchPlayers = state.squad
-        .filter(p => p.available && !state.match.lineupIds.includes(p.id))
-        .sort((a, b) => getPlayerMatchMins(a.id) - getPlayerMatchMins(b.id));
-
+      const benchPlayers = state.squad.filter(p => p.available && !state.match.lineupIds.includes(p.id)).sort((a, b) => getPlayerMatchMins(a.id) - getPlayerMatchMins(b.id));
       document.getElementById("match-bench-count").textContent = `${benchPlayers.length} Available`;
       const benchGrid = document.getElementById("match-bench-grid");
       benchGrid.innerHTML = "";
-
       benchPlayers.forEach(p => {
-        const mins = getPlayerMatchMins(p.id);
         const card = document.createElement("div");
         card.className = "bench-card";
         card.onclick = () => openSubModal(null, p.id);
-        card.innerHTML = `
-          <div class="bench-left">
-            <div class="num-circle">${p.num}</div>
-            <div class="bench-name">${p.name}</div>
-          </div>
-          <span class="mins-tag">${mins}m</span>
-        `;
+        card.innerHTML = `<div class="bench-left"><div class="num-circle">${p.num}</div><div class="bench-name">${p.name}</div></div><span class="mins-tag">${getPlayerMatchMins(p.id)}m</span>`;
         benchGrid.appendChild(card);
       });
 
       const tList = document.getElementById("match-timeline-list");
-      if (!state.match.timeline.length) {
-        tList.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:8px;">No match events logged yet.</div>`;
-      } else {
-        tList.innerHTML = state.match.timeline.map(item => `
-          <div class="timeline-row">
-            <span>${item.text || ''}</span>
-            <span style="color:var(--navy-900); font-weight:900;">${item.min || ''}</span>
-          </div>
-        `).join("");
-      }
+      tList.innerHTML = !state.match.timeline.length
+        ? `<div style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:8px;">No match events logged yet.</div>`
+        : state.match.timeline.map(item => `<div class="timeline-row"><span>${item.text || ''}</span><span style="color:var(--navy-900);font-weight:900;">${item.min || ''}</span></div>`).join("");
     }
 
     function renderLineupView() {
-      sanitizeFullState();
+      sanitizeState();
       document.getElementById("input-my-team").value = state.setup.myTeam;
       document.getElementById("input-opp-team").value = state.setup.oppTeam;
       document.getElementById("input-half-mins").value = state.setup.halfDuration;
@@ -1874,40 +789,24 @@
       state.match.lineupIds.forEach((pid, idx) => {
         const player = state.squad.find(p => p.id === pid) || { id: pid, name: "Empty", num: "-" };
         const slot = coords[idx] || { role: "XI", x: 50, y: 50 };
-        const isSelected = selectedSwapTarget && selectedSwapTarget.type === "pitch" && selectedSwapTarget.slotIndex === idx;
-
+        const isSel = selectedSwapTarget && selectedSwapTarget.type === "pitch" && selectedSwapTarget.slotIndex === idx;
         const el = document.createElement("div");
-        el.className = "pitch-token" + (isSelected ? " selected" : "");
-        el.style.left = slot.x + "%";
-        el.style.top = slot.y + "%";
+        el.className = "pitch-token" + (isSel ? " selected" : "");
+        el.style.left = slot.x + "%"; el.style.top = slot.y + "%";
         el.onclick = () => handleLineupSwapTap({ type: "pitch", slotIndex: idx, playerId: pid });
-
-        el.innerHTML = `
-          <div class="token-disc">
-            ${player.num}
-            <span class="token-role-pill">${slot.role}</span>
-          </div>
-          <div class="token-label">${player.name}</div>
-        `;
+        el.innerHTML = `<div class="token-disc">${player.num}<span class="token-role-pill">${slot.role}</span></div><div class="token-label">${player.name}</div>`;
         container.appendChild(el);
       });
 
       const benchPlayers = state.squad.filter(p => p.available && !state.match.lineupIds.includes(p.id));
       const benchGrid = document.getElementById("lineup-bench-grid");
       benchGrid.innerHTML = "";
-
       benchPlayers.forEach(p => {
-        const isSelected = selectedSwapTarget && selectedSwapTarget.type === "bench" && selectedSwapTarget.playerId === p.id;
+        const isSel = selectedSwapTarget && selectedSwapTarget.type === "bench" && selectedSwapTarget.playerId === p.id;
         const card = document.createElement("div");
-        card.className = "bench-card" + (isSelected ? " selected" : "");
+        card.className = "bench-card" + (isSel ? " selected" : "");
         card.onclick = () => handleLineupSwapTap({ type: "bench", playerId: p.id });
-        card.innerHTML = `
-          <div class="bench-left">
-            <div class="num-circle">${p.num}</div>
-            <div class="bench-name">${p.name}</div>
-          </div>
-          <span class="mins-tag">SUB</span>
-        `;
+        card.innerHTML = `<div class="bench-left"><div class="num-circle">${p.num}</div><div class="bench-name">${p.name}</div></div><span class="mins-tag">SUB</span>`;
         benchGrid.appendChild(card);
       });
     }
@@ -1921,78 +820,36 @@
         renderLineupView();
         return;
       }
-
       if (selectedSwapTarget.type === "pitch" && target.type === "pitch") {
-        const i1 = selectedSwapTarget.slotIndex;
-        const i2 = target.slotIndex;
-        const temp = state.match.lineupIds[i1];
-        state.match.lineupIds[i1] = state.match.lineupIds[i2];
-        state.match.lineupIds[i2] = temp;
+        const i1 = selectedSwapTarget.slotIndex, i2 = target.slotIndex, tmp = state.match.lineupIds[i1];
+        state.match.lineupIds[i1] = state.match.lineupIds[i2]; state.match.lineupIds[i2] = tmp;
       } else if (selectedSwapTarget.type === "pitch" && target.type === "bench") {
         state.match.lineupIds[selectedSwapTarget.slotIndex] = target.playerId;
       } else if (selectedSwapTarget.type === "bench" && target.type === "pitch") {
         state.match.lineupIds[target.slotIndex] = selectedSwapTarget.playerId;
       }
-
       selectedSwapTarget = null;
       banner.textContent = "Tap any two players (pitch or bench) to swap positions.";
-      persist();
-      renderLineupView();
-      renderMatchView();
+      persist(); renderLineupView(); renderMatchView();
     }
 
     function saveSetupConfig() {
       state.setup.myTeam = document.getElementById("input-my-team").value.trim() || "Woodley Utd Spitfires";
       state.setup.oppTeam = document.getElementById("input-opp-team").value.trim() || "Opposition";
       state.setup.halfDuration = parseInt(document.getElementById("input-half-mins").value) || 40;
-      persist();
-      renderTopScoreboard();
+      persist(); renderTopScoreboard();
     }
-
-    function setVenue(v) {
-      state.setup.venue = v;
-      persist();
-      renderLineupView();
-      renderTopScoreboard();
-    }
-
-    function changeFormation(val) {
-      state.setup.formation = val;
-      persist();
-      renderLineupView();
-      renderMatchView();
-    }
-
+    function setVenue(v) { state.setup.venue = v; persist(); renderLineupView(); renderTopScoreboard(); }
+    function changeFormation(val) { state.setup.formation = val; persist(); renderLineupView(); renderMatchView(); }
     function autoFillStartingXI() {
-      const avail = state.squad.filter(p => p.available).slice(0, 11).map(p => p.id);
-      if (avail.length < 11) {
-        alert(`Only ${avail.length} available players marked in Squad Roster.`);
-      }
-      state.match.lineupIds = avail;
-      persist();
-      renderLineupView();
-      renderMatchView();
+      state.match.lineupIds = state.squad.filter(p => p.available).slice(0, 11).map(p => p.id);
+      persist(); renderLineupView(); renderMatchView();
     }
-
     function resetMatchSheet() {
       if (!confirm("Reset current live match clock, score, and events back to 0-0 Pre-Match?")) return;
-      state.match = {
-        status: "PRE",
-        running: false,
-        elapsedSec: 0,
-        lastTickAt: null,
-        scoreUs: 0,
-        scoreThem: 0,
-        lineupIds: state.squad.filter(p => p.available).slice(0, 11).map(p => p.id),
-        starterIds: [],
-        appearedIds: [],
-        playerSeconds: {},
-        cards: {},
-        timeline: []
-      };
+      state.match = { status: "PRE", running: false, elapsedSec: 0, lastTickAt: null, scoreUs: 0, scoreThem: 0, lineupIds: state.squad.filter(p => p.available).slice(0, 11).map(p => p.id), starterIds: [], appearedIds: [], playerSeconds: {}, cards: {}, timeline: [] };
       state.undoStack = [];
-      persist();
-      window.renderEverything();
+      persist(); renderEverything();
     }
 
     function pushUndo() {
@@ -2000,19 +857,14 @@
       state.undoStack.push(JSON.stringify(state.match));
       if (state.undoStack.length > 20) state.undoStack.shift();
     }
-
     function undoLastAction() {
-      if (!state.undoStack || !state.undoStack.length) {
-        alert("No recent match event to undo.");
-        return;
-      }
+      if (!state.undoStack || !state.undoStack.length) return alert("No recent match event to undo.");
       state.match = JSON.parse(state.undoStack.pop());
-      persist();
-      window.renderEverything();
+      persist(); renderEverything();
     }
 
-    function openQuickPlayerAction(playerId) {
-      const p = state.squad.find(x => x.id === playerId);
+    function openQuickPlayerAction(pid) {
+      const p = state.squad.find(x => x.id === pid);
       if (!p) return;
       document.getElementById("pa-modal-title").textContent = `#${p.num} ${p.name} (${getPlayerMatchMins(p.id)} mins)`;
       document.getElementById("pa-btn-goal").onclick = () => { closeModal("modal-player-action"); openGoalModal(p.id); };
@@ -2023,139 +875,75 @@
     }
 
     function openGoalModal(preScorerId = null) {
-      const sSel = document.getElementById("goal-scorer-id");
-      const aSel = document.getElementById("goal-assist-id");
-      sSel.innerHTML = "";
-      aSel.innerHTML = `<option value="">— No Assist / Unassisted —</option>`;
-
+      const sSel = document.getElementById("goal-scorer-id"), aSel = document.getElementById("goal-assist-id");
+      sSel.innerHTML = ""; aSel.innerHTML = `<option value="">— No Assist / Unassisted —</option>`;
       state.match.lineupIds.forEach(pid => {
         const p = state.squad.find(x => x.id === pid);
         if (p) {
-          sSel.innerHTML += `<option value="${p.id}" ${p.id === preScorerId ? 'selected' : ''}>#${p.num}${p.name}</option>`;
-          aSel.innerHTML += `<option value="${p.id}">#${p.num}${p.name}</option>`;
+          sSel.innerHTML += `<option value="${p.id}" ${p.id === preScorerId ? 'selected' : ''}>#${p.num} ${p.name}</option>`;
+          aSel.innerHTML += `<option value="${p.id}">#${p.num} ${p.name}</option>`;
         }
       });
       openModal("modal-goal");
     }
 
     function confirmOurGoal() {
-      const scorerId = document.getElementById("goal-scorer-id").value;
-      const assistId = document.getElementById("goal-assist-id").value;
-      const scorer = state.squad.find(p => p.id === scorerId);
-      const assister = assistId ? state.squad.find(p => p.id === assistId) : null;
-
+      const scorerId = document.getElementById("goal-scorer-id").value, assistId = document.getElementById("goal-assist-id").value;
+      const scorer = state.squad.find(p => p.id === scorerId), assister = assistId ? state.squad.find(p => p.id === assistId) : null;
       pushUndo();
       state.match.scoreUs += 1;
-      const minStr = getCurrentMinuteStr();
-      state.match.timeline.unshift({
-        min: minStr,
-        type: "goal_us",
-        scorerId,
-        assistId,
-        text: `⚽ GOAL! ${scorer ? scorer.name : 'Us'}${assister ? ` (🎯 Assist: ${assister.name})` : ''}`
-      });
-
-      closeModal("modal-goal");
-      persist();
-      renderTopScoreboard();
-      renderMatchView();
+      state.match.timeline.unshift({ min: getCurrentMinuteStr(), type: "goal_us", scorerId, assistId, text: `⚽ GOAL! ${scorer ? scorer.name : 'Us'}${assister ? ` (🎯 Assist: ${assister.name})` : ''}` });
+      closeModal("modal-goal"); persist(); renderTopScoreboard(); renderMatchView();
     }
 
     function logOppositionGoal() {
       pushUndo();
       state.match.scoreThem += 1;
-      state.match.timeline.unshift({
-        min: getCurrentMinuteStr(),
-        type: "goal_them",
-        text: `🥅 Goal Scored by ${state.setup.oppTeam}`
-      });
-      persist();
-      renderTopScoreboard();
-      renderMatchView();
+      state.match.timeline.unshift({ min: getCurrentMinuteStr(), type: "goal_them", text: `🥅 Goal Scored by ${state.setup.oppTeam}` });
+      persist(); renderTopScoreboard(); renderMatchView();
     }
 
     function openSubModal(preOffId = null, preOnId = null) {
-      const offSel = document.getElementById("sub-off-id");
-      const onSel = document.getElementById("sub-on-id");
-      offSel.innerHTML = "";
-      onSel.innerHTML = "";
-
+      const offSel = document.getElementById("sub-off-id"), onSel = document.getElementById("sub-on-id");
+      offSel.innerHTML = ""; onSel.innerHTML = "";
       state.match.lineupIds.forEach(pid => {
         const p = state.squad.find(x => x.id === pid);
-        if (p) {
-          offSel.innerHTML += `<option value="${p.id}" ${p.id === preOffId ? 'selected' : ''}>#${p.num} ${p.name} (${getPlayerMatchMins(p.id)}m played)</option>`;
-        }
+        if (p) offSel.innerHTML += `<option value="${p.id}" ${p.id === preOffId ? 'selected' : ''}>#${p.num} ${p.name} (${getPlayerMatchMins(p.id)}m played)</option>`;
       });
-
-      const bench = state.squad
-        .filter(p => p.available && !state.match.lineupIds.includes(p.id))
-        .sort((a, b) => getPlayerMatchMins(a.id) - getPlayerMatchMins(b.id));
-
-      bench.forEach(p => {
+      state.squad.filter(p => p.available && !state.match.lineupIds.includes(p.id)).sort((a, b) => getPlayerMatchMins(a.id) - getPlayerMatchMins(b.id)).forEach(p => {
         onSel.innerHTML += `<option value="${p.id}" ${p.id === preOnId ? 'selected' : ''}>#${p.num} ${p.name} (${getPlayerMatchMins(p.id)}m played)</option>`;
       });
-
       openModal("modal-sub");
     }
 
     function confirmRollingSub() {
-      const offId = document.getElementById("sub-off-id").value;
-      const onId = document.getElementById("sub-on-id").value;
+      const offId = document.getElementById("sub-off-id").value, onId = document.getElementById("sub-on-id").value;
       if (!offId || !onId) return;
-
       pushUndo();
       const idx = state.match.lineupIds.indexOf(offId);
       if (idx !== -1) state.match.lineupIds[idx] = onId;
       if (!state.match.appearedIds.includes(onId)) state.match.appearedIds.push(onId);
-
-      const pOff = state.squad.find(p => p.id === offId);
-      const pOn = state.squad.find(p => p.id === onId);
-
-      state.match.timeline.unshift({
-        min: getCurrentMinuteStr(),
-        type: "sub",
-        text: `🔄 SUB: ${pOn ? pOn.name : 'Sub'} ON for ${pOff ? pOff.name : 'Player'}`
-      });
-
-      closeModal("modal-sub");
-      persist();
-      renderMatchView();
-      renderLineupView();
+      const pOff = state.squad.find(p => p.id === offId), pOn = state.squad.find(p => p.id === onId);
+      state.match.timeline.unshift({ min: getCurrentMinuteStr(), type: "sub", text: `🔄 SUB: ${pOn ? pOn.name : 'Sub'} ON for ${pOff ? pOff.name : 'Player'}` });
+      closeModal("modal-sub"); persist(); renderMatchView(); renderLineupView();
     }
 
     function openCardModal() {
-      const sel = document.getElementById("card-player-id");
-      sel.innerHTML = "";
+      const sel = document.getElementById("card-player-id"); sel.innerHTML = "";
       state.match.lineupIds.forEach(pid => {
         const p = state.squad.find(x => x.id === pid);
-        if (p) sel.innerHTML += `<option value="${p.id}">#${p.num}${p.name}</option>`;
+        if (p) sel.innerHTML += `<option value="${p.id}">#${p.num} ${p.name}</option>`;
       });
       openModal("modal-card");
     }
-
-    function confirmCard(color) {
-      const pid = document.getElementById("card-player-id").value;
-      closeModal("modal-card");
-      logDirectCard(pid, color);
-    }
-
+    function confirmCard(color) { const pid = document.getElementById("card-player-id").value; closeModal("modal-card"); logDirectCard(pid, color); }
     function logDirectCard(pid, color) {
-      const p = state.squad.find(x => x.id === pid);
-      if (!p) return;
+      const p = state.squad.find(x => x.id === pid); if (!p) return;
       pushUndo();
       if (!state.match.cards[pid]) state.match.cards[pid] = { yellow: 0, red: 0 };
-      if (color === "yellow") state.match.cards[pid].yellow += 1;
-      else state.match.cards[pid].red += 1;
-
-      state.match.timeline.unshift({
-        min: getCurrentMinuteStr(),
-        type: "card",
-        playerId: pid,
-        cardColor: color,
-        text: `${color === 'yellow' ? '🟨 Yellow' : '🟥 Red'} Card: ${p.name}`
-      });
-      persist();
-      renderMatchView();
+      if (color === "yellow") state.match.cards[pid].yellow += 1; else state.match.cards[pid].red += 1;
+      state.match.timeline.unshift({ min: getCurrentMinuteStr(), type: "card", playerId: pid, cardColor: color, text: `${color === 'yellow' ? '🟨 Yellow' : '🟥 Red'} Card: ${p.name}` });
+      persist(); renderMatchView();
     }
 
     function switchSquadSubtab(mode) {
@@ -2167,216 +955,131 @@
     }
 
     function renderSquadAndSeason() {
-      sanitizeFullState();
+      sanitizeState();
       const availCount = state.squad.filter(p => p.available).length;
       document.getElementById("squad-count-label").textContent = `${availCount}/${state.squad.length} Available`;
-
       const rList = document.getElementById("squad-roster-list");
       rList.innerHTML = "";
-
       state.squad.forEach(p => {
         const row = document.createElement("div");
         row.className = "roster-row" + (!p.available ? " unavailable" : "");
-        row.innerHTML = `
-          <div class="bench-left">
-            <div class="num-circle">${p.num}</div>
-            <div class="bench-name">${p.name}</div>
-          </div>
-          <div class="roster-actions">
-            <button class="btn-avail ${p.available ? 'yes' : 'no'}" onclick="toggleAvailability('${p.id}')">
-              ${p.available ? '✅ Available' : '❌ Absent'}
-            </button>
-            <button class="btn-icon-sq" onclick="editPlayerPrompt('${p.id}')" title="Edit">✏️</button>
-            <button class="btn-icon-sq" onclick="removePlayer('${p.id}')" title="Delete">🗑️</button>
-          </div>
-        `;
+        row.innerHTML = `<div class="bench-left"><div class="num-circle">${p.num}</div><div class="bench-name">${p.name}</div></div><div class="roster-actions"><button class="btn-avail ${p.available ? 'yes' : 'no'}" onclick="toggleAvailability('${p.id}')">${p.available ? '✅ Available' : '❌ Absent'}</button><button class="btn-icon-sq" onclick="editPlayerPrompt('${p.id}')">✏️</button><button class="btn-icon-sq" onclick="removePlayer('${p.id}')">🗑️</button></div>`;
         rList.appendChild(row);
       });
 
       const tbody = document.getElementById("season-stats-tbody");
       tbody.innerHTML = "";
       const sorted = [...state.squad].sort((a, b) => (state.seasonStats[b.id]?.mins || 0) - (state.seasonStats[a.id]?.mins || 0));
-
       sorted.forEach(p => {
         const st = state.seasonStats[p.id] || { apps: 0, starts: 0, subs: 0, mins: 0, goals: 0, assists: 0, yellow: 0, red: 0 };
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${p.num}</td>
-          <td><strong>${p.name}</strong></td>
-          <td>${st.apps || 0} <span style="color:var(--text-muted); font-size:0.75rem;">(${st.starts \vert{}\vert{} 0}/${st.subs || 0})</span></td>
-          <td>${st.mins || 0}'</td>
-          <td>${st.goals || 0}</td>
-          <td>${st.assists || 0}</td>
-          <td>${st.yellow \vert{}\vert{} 0}/${st.red || 0}</td>
-        `;
+        tr.innerHTML = `<td>${p.num}</td><td><strong>${p.name}</strong></td><td>${st.apps||0} <span style="color:var(--text-muted);font-size:0.72rem;">(${st.starts||0}/${st.subs||0})</span></td><td>${st.mins||0}'</td><td>${st.goals||0}</td><td>${st.assists||0}</td><td>${st.yellow||0}/${st.red||0}</td><td><button class="btn-icon-sq" style="width:32px;height:32px;font-size:0.8rem;" onclick="editSeasonStatPrompt('${p.id}')">✏️</button></td>`;
         tbody.appendChild(tr);
       });
     }
 
-    function toggleAvailability(pid) {
-      const p = state.squad.find(x => x.id === pid);
-      if (p) p.available = !p.available;
-      persist();
-      renderSquadAndSeason();
-      renderLineupView();
-      renderMatchView();
+    function editSeasonStatPrompt(pid) {
+      const p = state.squad.find(x => x.id === pid); if (!p) return;
+      ensureSeasonStats();
+      const st = state.seasonStats[pid];
+      const starts = prompt(`Edit Season STARTS for ${p.name}:`, st.starts || 0); if (starts === null) return;
+      const subs = prompt(`Edit Season SUB Appearances for ${p.name}:`, st.subs || 0); if (subs === null) return;
+      const mins = prompt(`Edit Total Season MINUTES for ${p.name}:`, st.mins || 0); if (mins === null) return;
+      const goals = prompt(`Edit Total Season GOALS for ${p.name}:`, st.goals || 0); if (goals === null) return;
+      const assists = prompt(`Edit Total Season ASSISTS for ${p.name}:`, st.assists || 0); if (assists === null) return;
+      st.starts = parseInt(starts) || 0;
+      st.subs = parseInt(subs) || 0;
+      st.apps = st.starts + st.subs;
+      st.mins = parseInt(mins) || 0;
+      st.goals = parseInt(goals) || 0;
+      st.assists = parseInt(assists) || 0;
+      persist(true); renderSquadAndSeason();
     }
 
+    function toggleAvailability(pid) { const p = state.squad.find(x => x.id === pid); if (p) p.available = !p.available; persist(); renderEverything(); }
     function addNewPlayer() {
       const numVal = parseInt(document.getElementById("new-player-num").value) || (state.squad.length + 1);
       const nameVal = document.getElementById("new-player-name").value.trim();
       if (!nameVal) return alert("Please enter a player first name.");
-      const newId = "p_" + Date.now();
-      state.squad.push({ id: newId, name: nameVal, num: numVal, available: true });
-      document.getElementById("new-player-num").value = "";
-      document.getElementById("new-player-name").value = "";
-      ensureSeasonStats();
-      persist();
-      renderSquadAndSeason();
-      renderLineupView();
+      state.squad.push({ id: "p_" + Date.now(), name: nameVal, num: numVal, available: true });
+      document.getElementById("new-player-num").value = ""; document.getElementById("new-player-name").value = "";
+      persist(); renderEverything();
     }
-
     function editPlayerPrompt(pid) {
-      const p = state.squad.find(x => x.id === pid);
-      if (!p) return;
-      const newName = prompt("Edit Player First Name:", p.name);
-      if (newName === null) return;
-      const newNum = prompt("Edit Squad Number:", p.num);
-      if (newNum === null) return;
-      p.name = newName.trim() || p.name;
-      p.num = parseInt(newNum) || p.num;
-      persist();
-      window.renderEverything();
+      const p = state.squad.find(x => x.id === pid); if (!p) return;
+      const newName = prompt("Edit Player First Name:", p.name); if (newName === null) return;
+      const newNum = prompt("Edit Squad Number:", p.num); if (newNum === null) return;
+      p.name = newName.trim() || p.name; p.num = parseInt(newNum) || p.num;
+      persist(); renderEverything();
     }
-
     function removePlayer(pid) {
       const p = state.squad.find(x => x.id === pid);
       if (!p || !confirm(`Remove ${p.name} from squad roster?`)) return;
       state.squad = state.squad.filter(x => x.id !== pid);
       state.match.lineupIds = state.match.lineupIds.filter(id => id !== pid);
-      persist();
-      window.renderEverything();
+      persist(); renderEverything();
     }
 
     function commitMatchToSeasonAndArchive() {
-      sanitizeFullState();
-      const s = state.setup;
-      const m = state.match;
-      const isHome = s.venue === "home";
-      const homeName = isHome ? s.myTeam : s.oppTeam;
-      const awayName = isHome ? s.oppTeam : s.myTeam;
-      const homeScore = isHome ? m.scoreUs : m.scoreThem;
-      const awayScore = isHome ? m.scoreThem : m.scoreUs;
-      const dateStr = new Date().toLocaleDateString("en-GB");
-
-      const deltas = {};
+      sanitizeState();
+      const s = state.setup, m = state.match, isHome = s.venue === "home";
+      const homeName = isHome ? s.myTeam : s.oppTeam, awayName = isHome ? s.oppTeam : s.myTeam;
+      const homeScore = isHome ? m.scoreUs : m.scoreThem, awayScore = isHome ? m.scoreThem : m.scoreUs;
+      const dateStr = new Date().toLocaleDateString("en-GB"), deltas = {};
 
       state.squad.forEach(p => {
-        const mins = getPlayerMatchMins(p.id);
-        const started = m.starterIds.includes(p.id);
+        const mins = getPlayerMatchMins(p.id), started = m.starterIds.includes(p.id);
         const appeared = started || m.appearedIds.includes(p.id) || mins > 0;
         const goals = m.timeline.filter(e => e.type === "goal_us" && e.scorerId === p.id).length;
         const assists = m.timeline.filter(e => e.type === "goal_us" && e.assistId === p.id).length;
-        const yc = m.cards[p.id]?.yellow || 0;
-        const rc = m.cards[p.id]?.red || 0;
-
+        const yc = m.cards[p.id]?.yellow || 0, rc = m.cards[p.id]?.red || 0;
         if (appeared || goals || assists || yc || rc) {
-          deltas[p.id] = {
-            apps: appeared ? 1 : 0,
-            starts: started ? 1 : 0,
-            subs: (appeared && !started) ? 1 : 0,
-            mins, goals, assists, yellow: yc, red: rc
-          };
+          deltas[p.id] = { apps: appeared ? 1 : 0, starts: started ? 1 : 0, subs: (appeared && !started) ? 1 : 0, mins, goals, assists, yellow: yc, red: rc };
           const st = state.seasonStats[p.id];
-          st.apps += deltas[p.id].apps;
-          st.starts += deltas[p.id].starts;
-          st.subs += deltas[p.id].subs;
-          st.mins += deltas[p.id].mins;
-          st.goals += deltas[p.id].goals;
-          st.assists += deltas[p.id].assists;
-          st.yellow += deltas[p.id].yellow;
-          st.red += deltas[p.id].red;
+          st.apps += deltas[p.id].apps; st.starts += deltas[p.id].starts; st.subs += deltas[p.id].subs;
+          st.mins += mins; st.goals += goals; st.assists += assists; st.yellow += yc; st.red += rc;
         }
       });
 
-      let report = `⚽ *MATCHDAY REPORT*\n`;
-      report += `🏟️ *${homeName}${homeScore} – ${awayScore}${awayName}*\n`;
-      report += `📅 Date: ${dateStr} (${s.halfDuration}m halves)\n\n`;
-      report += `📋 *MATCH TIMELINE:*\n`;
-      const chron = [...m.timeline].reverse();
-      chron.forEach(e => { report += `• ${e.min}${e.text}\n`; });
+      let report = `⚽ *MATCHDAY REPORT*\n🏟️ *${homeName} ${homeScore} – ${awayScore} ${awayName}*\n📅 Date: ${dateStr} (${s.halfDuration}m halves)\n\n📋 *MATCH TIMELINE:*\n`;
+      [...m.timeline].reverse().forEach(e => { report += `• ${e.min} ${e.text}\n`; });
       report += `\n⏱️ *PLAYER MINUTES:*\n`;
       state.squad.forEach(p => {
         if (deltas[p.id]) {
           const d = deltas[p.id];
-          report += `• #${p.num} ${p.name}:${d.mins}' (${d.starts ? 'Start' : 'Sub'})${d.goals ? ` ⚽x${d.goals}` : ''}${d.assists ? ` 🎯x${d.assists}` : ''}\n`;
+          report += `• #${p.num} ${p.name}: ${d.mins}' (${d.starts ? 'Start' : 'Sub'})${d.goals ? ` ⚽x${d.goals}` : ''}${d.assists ? ` 🎯x${d.assists}` : ''}\n`;
         }
       });
-
-      state.history.unshift({
-        id: "match_" + Date.now(),
-        date: dateStr,
-        header: `${homeName}${homeScore} – ${awayScore}${awayName}`,
-        report,
-        deltas
-      });
+      state.history.unshift({ id: "match_" + Date.now(), date: dateStr, header: `${homeName} ${homeScore} – ${awayScore} ${awayName}`, report, deltas });
     }
 
     function rebuildMatchFromSeasonStats() {
-      sanitizeFullState();
-      const s = state.setup;
-      const isHome = s.venue === "home";
-      const homeName = isHome ? s.myTeam : s.oppTeam;
-      const awayName = isHome ? s.oppTeam : s.myTeam;
-
+      sanitizeState();
+      const s = state.setup, isHome = s.venue === "home";
+      const homeName = isHome ? s.myTeam : s.oppTeam, awayName = isHome ? s.oppTeam : s.myTeam;
       let totalGoalsUs = 0;
-      state.squad.forEach(p => {
-        totalGoalsUs += (state.seasonStats[p.id]?.goals || 0);
-      });
-
-      const oppScoreStr = prompt(`Rebuilding Match Report for ${homeName} vs${awayName}.\n\nSeason Stats show our team scored ${totalGoalsUs} goal(s).\nHow many goals did${s.oppTeam} score?`, "0");
+      state.squad.forEach(p => { totalGoalsUs += (state.seasonStats[p.id]?.goals || 0); });
+      const oppScoreStr = prompt(`Rebuilding Match Report for ${homeName} vs ${awayName}.\n\nSeason Stats show our team scored ${totalGoalsUs} goal(s).\nHow many goals did ${s.oppTeam} score?`, "0");
       if (oppScoreStr === null) return;
       const oppGoals = parseInt(oppScoreStr) || 0;
-
-      const homeScore = isHome ? totalGoalsUs : oppGoals;
-      const awayScore = isHome ? oppGoals : totalGoalsUs;
+      const homeScore = isHome ? totalGoalsUs : oppGoals, awayScore = isHome ? oppGoals : totalGoalsUs;
       const dateStr = new Date().toLocaleDateString("en-GB");
 
-      let report = `⚽ *MATCHDAY REPORT*\n`;
-      report += `🏟️ *${homeName}${homeScore} – ${awayScore}${awayName}*\n`;
-      report += `📅 Date: ${dateStr} (${s.halfDuration}m halves)\n\n`;
-
-      report += `⚽ *GOALS & ASSISTS:*\n`;
-      let hasGoals = false;
+      let report = `⚽ *MATCHDAY REPORT*\n🏟️ *${homeName} ${homeScore} – ${awayScore} ${awayName}*\n📅 Date: ${dateStr} (${s.halfDuration}m halves)\n\n⚽ *GOALS & ASSISTS:*\n`;
+      let hasG = false;
       state.squad.forEach(p => {
         const st = state.seasonStats[p.id];
-        if (st && (st.goals > 0 || st.assists > 0)) {
-          hasGoals = true;
-          report += `• #${p.num} ${p.name}:${st.goals ? `⚽ x${st.goals} ` : ''}${st.assists ? `🎯 x${st.assists}` : ''}\n`;
-        }
+        if (st && (st.goals > 0 || st.assists > 0)) { hasG = true; report += `• #${p.num} ${p.name}: ${st.goals ? `⚽ x${st.goals} ` : ''}${st.assists ? `🎯 x${st.assists}` : ''}\n`; }
       });
-      if (!hasGoals) report += `• None logged\n`;
-
+      if (!hasG) report += `• None logged\n`;
       report += `\n⏱️ *PLAYER MINUTES:*\n`;
       state.squad.forEach(p => {
         const st = state.seasonStats[p.id];
-        if (st && (st.apps > 0 || st.mins > 0)) {
-          const roleLabel = st.starts > 0 ? "Start" : "Sub";
-          report += `• #${p.num} ${p.name}:${st.mins}' (${roleLabel})${st.goals ? ` ⚽x${st.goals}` : ''}${st.assists ? ` 🎯x${st.assists}` : ''}\n`;
-        }
+        if (st && (st.apps > 0 || st.mins > 0)) report += `• #${p.num} ${p.name}: ${st.mins}' (${st.starts > 0 ? 'Start' : 'Sub'})${st.goals ? ` ⚽x${st.goals}` : ''}${st.assists ? ` 🎯x${st.assists}` : ''}\n`;
       });
 
-      state.history.unshift({
-        id: "match_rebuilt_" + Date.now(),
-        date: dateStr,
-        header: `${homeName}${homeScore} – ${awayScore}${awayName}`,
-        report,
-        deltas: null
-      });
-
-      persist(true);
-      renderHistoryView();
-      openReportModal(report);
+      state.history.unshift({ id: "match_rebuilt_" + Date.now(), date: dateStr, header: `${homeName} ${homeScore} – ${awayScore} ${awayName}`, report, deltas: null });
+      persist(true); renderHistoryView(); openReportModal(report);
     }
 
     function openManualMatchModal() {
@@ -2385,32 +1088,16 @@
       document.getElementById("past-score-us").value = 0;
       document.getElementById("past-score-them").value = 0;
       document.getElementById("past-update-season-chk").checked = true;
-
       const defaultFullMins = (state.setup.halfDuration || 40) * 2;
       const container = document.getElementById("past-players-container");
       container.innerHTML = "";
-
       state.squad.forEach((p, idx) => {
-        const defaultRole = idx < 11 ? "start" : "sub";
-        const defaultMins = idx < 11 ? defaultFullMins : 30;
+        const role = idx < 11 ? "start" : "sub", mins = idx < 11 ? defaultFullMins : 30;
         const row = document.createElement("div");
         row.className = "past-player-row";
-        row.innerHTML = `
-          <div style="font-weight:900; font-size:0.85rem;">#${p.num}${p.name}</div>
-          <div style="display:flex; gap:5px; align-items:center;">
-            <select id="past_role_${p.id}" class="day-select" style="min-height:38px; padding:0 6px; font-size:0.78rem; width:78px;">
-              <option value="start" ${defaultRole === 'start' ? 'selected' : ''}>Start</option>
-              <option value="sub" ${defaultRole === 'sub' ? 'selected' : ''}>Sub</option>
-              <option value="dnp">DNP</option>
-            </select>
-            <input type="number" id="past_mins_${p.id}" class="mini-num-input" value="${defaultMins}" title="Minutes">
-            <input type="number" id="past_g_${p.id}" class="mini-num-input" value="0" min="0" title="Goals">
-            <input type="number" id="past_a_${p.id}" class="mini-num-input" value="0" min="0" title="Assists">
-          </div>
-        `;
+        row.innerHTML = `<div style="font-weight:900;font-size:0.85rem;">#${p.num} ${p.name}</div><div style="display:flex;gap:5px;align-items:center;"><select id="past_role_${p.id}" class="day-select" style="min-height:38px;padding:0 6px;font-size:0.78rem;width:78px;"><option value="start" ${role==='start'?'selected':''}>Start</option><option value="sub" ${role==='sub'?'selected':''}>Sub</option><option value="dnp">DNP</option></select><input type="number" id="past_mins_${p.id}" class="mini-num-input" value="${mins}"><input type="number" id="past_g_${p.id}" class="mini-num-input" value="0" min="0"><input type="number" id="past_a_${p.id}" class="mini-num-input" value="0" min="0"></div>`;
         container.appendChild(row);
       });
-
       openModal("modal-past-match");
     }
 
@@ -2421,178 +1108,83 @@
       const opp = document.getElementById("past-opp").value.trim() || "Opposition";
       const scoreUs = parseInt(document.getElementById("past-score-us").value) || 0;
       const scoreThem = parseInt(document.getElementById("past-score-them").value) || 0;
-      const shouldCommitStats = document.getElementById("past-update-season-chk").checked;
-
+      const commitStats = document.getElementById("past-update-season-chk").checked;
       const isHome = venue === "home";
-      const homeName = isHome ? state.setup.myTeam : opp;
-      const awayName = isHome ? opp : state.setup.myTeam;
-      const homeScore = isHome ? scoreUs : scoreThem;
-      const awayScore = isHome ? scoreThem : scoreUs;
+      const homeName = isHome ? state.setup.myTeam : opp, awayName = isHome ? opp : state.setup.myTeam;
+      const homeScore = isHome ? scoreUs : scoreThem, awayScore = isHome ? scoreThem : scoreUs;
 
-      sanitizeFullState();
+      sanitizeState();
       const deltas = {};
-      let report = `⚽ *MATCHDAY REPORT*\n🏟️ *${homeName} ${homeScore} –${awayScore} ${awayName}*\n📅 Date: ${dateStr}\n\n⏱️ *PLAYER BREAKDOWN:*\n`;
-
+      let report = `⚽ *MATCHDAY REPORT*\n🏟️ *${homeName} ${homeScore} – ${awayScore} ${awayName}*\n📅 Date: ${dateStr}\n\n⏱️ *PLAYER BREAKDOWN:*\n`;
       state.squad.forEach(p => {
         const role = document.getElementById(`past_role_${p.id}`).value;
         if (role !== "dnp") {
           const mins = parseInt(document.getElementById(`past_mins_${p.id}`).value) || 0;
           const goals = parseInt(document.getElementById(`past_g_${p.id}`).value) || 0;
           const assists = parseInt(document.getElementById(`past_a_${p.id}`).value) || 0;
-
-          if (shouldCommitStats) {
-            deltas[p.id] = {
-              apps: 1,
-              starts: role === "start" ? 1 : 0,
-              subs: role === "sub" ? 1 : 0,
-              mins, goals, assists, yellow: 0, red: 0
-            };
-
+          if (commitStats) {
+            deltas[p.id] = { apps: 1, starts: role === "start" ? 1 : 0, subs: role === "sub" ? 1 : 0, mins, goals, assists, yellow: 0, red: 0 };
             const st = state.seasonStats[p.id];
-            st.apps += 1;
-            st.starts += deltas[p.id].starts;
-            st.subs += deltas[p.id].subs;
-            st.mins += mins;
-            st.goals += goals;
-            st.assists += assists;
+            st.apps += 1; st.starts += deltas[p.id].starts; st.subs += deltas[p.id].subs;
+            st.mins += mins; st.goals += goals; st.assists += assists;
           }
-
-          report += `• #${p.num} ${p.name}:${mins}' (${role === 'start' ? 'Start' : 'Sub'})${goals ? ` ⚽x${goals}` : ''}${assists ? ` 🎯x${assists}` : ''}\n`;
+          report += `• #${p.num} ${p.name}: ${mins}' (${role === 'start' ? 'Start' : 'Sub'})${goals ? ` ⚽x${goals}` : ''}${assists ? ` 🎯x${assists}` : ''}\n`;
         }
       });
-
-      state.history.unshift({
-        id: "match_" + Date.now(),
-        date: dateStr,
-        header: `${homeName}${homeScore} – ${awayScore}${awayName}`,
-        report,
-        deltas: shouldCommitStats ? deltas : null
-      });
-
-      closeModal("modal-past-match");
-      persist(true);
-      window.renderEverything();
+      state.history.unshift({ id: "match_" + Date.now(), date: dateStr, header: `${homeName} ${homeScore} – ${awayScore} ${awayName}`, report, deltas: commitStats ? deltas : null });
+      closeModal("modal-past-match"); persist(true); renderEverything();
     }
 
     function renderHistoryView() {
-      sanitizeFullState();
+      sanitizeState();
       const list = document.getElementById("history-archive-list");
-      if (!list) return;
-
       if (!state.history.length) {
-        list.innerHTML = `
-          <div style="text-align:center; color:var(--text-muted); padding:12px; font-weight:700;">
-            No archived matches in list yet. Tap the green button above to restore today's match report from your Season Stats!
-          </div>
-        `;
+        list.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:12px;font-weight:700;">No archived matches in list yet. Tap "+ Log Past Match" above or "Rebuild Match Report" to add games!</div>`;
         return;
       }
-
       list.innerHTML = "";
-      state.history.forEach((item) => {
+      state.history.forEach(item => {
         const row = document.createElement("div");
         row.className = "roster-row";
-        row.style.flexDirection = "column";
-        row.style.alignItems = "stretch";
-        row.style.gap = "8px";
-
-        const topBar = document.createElement("div");
-        topBar.style.display = "flex";
-        topBar.style.justifyContent = "space-between";
-        topBar.style.alignItems = "center";
-        topBar.style.gap = "8px";
-
-        const infoDiv = document.createElement("div");
-        infoDiv.innerHTML = `
-          <div style="font-weight:900; font-size:0.95rem; color:var(--text-main);">${item.header || 'Match Report'}</div>
-          <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">📅 ${item.date || ''}</div>
-        `;
-
-        const btnGroup = document.createElement("div");
-        btnGroup.style.display = "flex";
-        btnGroup.style.gap = "6px";
-
-        const repBtn = document.createElement("button");
-        repBtn.className = "btn-avail yes";
-        repBtn.textContent = "📋 Report";
-        repBtn.onclick = () => openReportModal(item.report || item.header);
-
-        const delBtn = document.createElement("button");
-        delBtn.className = "btn-icon-sq";
-        delBtn.textContent = "🗑️";
-        delBtn.onclick = () => deleteHistoryMatch(item.id);
-
-        btnGroup.appendChild(repBtn);
-        btnGroup.appendChild(delBtn);
-        topBar.appendChild(infoDiv);
-        topBar.appendChild(btnGroup);
-        row.appendChild(topBar);
+        row.innerHTML = `<div><div style="font-weight:900;font-size:0.95rem;">${item.header}</div><div style="font-size:0.75rem;color:var(--text-muted);font-weight:700;">📅 ${item.date}</div></div><div style="display:flex;gap:6px;"><button class="btn-avail yes" onclick="openReportById('${item.id}')">📋 Report</button><button class="btn-icon-sq" onclick="deleteHistoryMatch('${item.id}')">🗑️</button></div>`;
         list.appendChild(row);
       });
     }
 
-    function openReportModal(text) {
-      activeReportText = text || "";
-      document.getElementById("report-preview-box").textContent = activeReportText;
-      openModal("modal-report");
-    }
-
-    function copyReportForWhatsApp() {
-      navigator.clipboard.writeText(activeReportText);
-      alert("Match Report copied! Ready to paste into WhatsApp.");
-    }
-
-    function nativeShareReport() {
-      if (navigator.share) {
-        navigator.share({ title: "Matchday Report", text: activeReportText }).catch(() => {});
-      } else {
-        copyReportForWhatsApp();
-      }
-    }
+    function openReportById(id) { const item = state.history.find(x => x.id === id); if (item) openReportModal(item.report); }
+    function openReportModal(text) { activeReportText = text || ""; document.getElementById("report-preview-box").textContent = activeReportText; openModal("modal-report"); }
+    function copyReportForWhatsApp() { navigator.clipboard.writeText(activeReportText); alert("Match Report copied! Ready to paste into WhatsApp."); }
+    function nativeShareReport() { if (navigator.share) navigator.share({ title: "Matchday Report", text: activeReportText }).catch(() => {}); else copyReportForWhatsApp(); }
 
     function deleteHistoryMatch(id) {
-      sanitizeFullState();
       const item = state.history.find(x => x.id === id);
       if (!item || !confirm(`Delete "${item.header}" from archive?`)) return;
-
-      if (item.deltas && confirm("Do you also want to subtract this match's minutes & goals from Season Totals?")) {
+      if (item.deltas && confirm("Also subtract this match's minutes & goals from Season Totals?")) {
         Object.keys(item.deltas).forEach(pid => {
-          const d = item.deltas[pid];
-          const st = state.seasonStats[pid];
+          const d = item.deltas[pid], st = state.seasonStats[pid];
           if (st) {
-            st.apps = Math.max(0, st.apps - (d.apps || 0));
-            st.starts = Math.max(0, st.starts - (d.starts || 0));
-            st.subs = Math.max(0, st.subs - (d.subs || 0));
-            st.mins = Math.max(0, st.mins - (d.mins || 0));
-            st.goals = Math.max(0, st.goals - (d.goals || 0));
-            st.assists = Math.max(0, st.assists - (d.assists || 0));
-            st.yellow = Math.max(0, st.yellow - (d.yellow || 0));
-            st.red = Math.max(0, st.red - (d.red || 0));
+            st.apps = Math.max(0, st.apps - (d.apps || 0)); st.starts = Math.max(0, st.starts - (d.starts || 0)); st.subs = Math.max(0, st.subs - (d.subs || 0));
+            st.mins = Math.max(0, st.mins - (d.mins || 0)); st.goals = Math.max(0, st.goals - (d.goals || 0)); st.assists = Math.max(0, st.assists - (d.assists || 0));
           }
         });
       }
-
       state.history = state.history.filter(x => x.id !== id);
-      persist(true);
-      window.renderEverything();
+      persist(true); renderEverything();
     }
 
-    window.renderEverything = function() {
-      try { renderTopScoreboard(); } catch (e) { console.error(e); }
-      try { renderMatchView(); } catch (e) { console.error(e); }
-      try { renderLineupView(); } catch (e) { console.error(e); }
-      try { renderSquadAndSeason(); } catch (e) { console.error(e); }
-      try { renderHistoryView(); } catch (e) { console.error(e); }
-    };
+    function renderEverything() {
+      try { renderTopScoreboard(); } catch (e) {}
+      try { renderMatchView(); } catch (e) {}
+      try { renderLineupView(); } catch (e) {}
+      try { renderSquadAndSeason(); } catch (e) {}
+      try { renderHistoryView(); } catch (e) {}
+    }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      loadLocal();
-      recoverLegacyLocalHistory();
-      initFirebaseSync();
-      startSecondLoop();
-      requestScreenWakeLock();
-      window.renderEverything();
-    });
+    loadLocal();
+    initFirebaseSync();
+    startSecondLoop();
+    requestScreenWakeLock();
+    renderEverything();
   </script>
 </body>
 </html>
